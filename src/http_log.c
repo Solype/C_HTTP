@@ -5,6 +5,12 @@
 #include "http_log.h"
 
 
+int log_space(void)
+{
+    fprintf(stderr, "\n");
+    return EXIT_SUCCESS;
+}
+
 int log_success(const char *message, ...)
 {
     va_list args;

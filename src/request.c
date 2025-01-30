@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 static int request_get_ip(struct request_s *request, int client_socket) {
     struct sockaddr_in client_addr;
@@ -20,19 +21,23 @@ static int request_get_ip(struct request_s *request, int client_socket) {
 
 int request_init(struct request_s *request, int client_socket)
 {
-    // request->raw_request = raw_request;
-    // request->method = strtok(request->raw_request, " ");
-    // request->uri = strtok(NULL, " ");
-    // request->version = strtok(NULL, "\r\n");
-    // request->rest = strtok(NULL, "");
+    char *body;
+    request->raw_request = calloc(1024, sizeof(char));
+    ssize_t bytes_read = read(client_socket, request->raw_request, 1024);
 
+    if (bytes_read <= 0) {
+        return log_error("Failed to read from client");;
+    }
     request_get_ip(request, client_socket);
-    // header_init(&request->headers);
+    header_init(&request->headers, request->raw_request, &body);
+    request->body = body;
+    log_info("Body received: %s", request->body);
     return 0;
 }
 
 int request_destroy(struct request_s *request)
 {
     free(request->raw_request);
+    header_destroy(&request->headers);
     return 0;
 }

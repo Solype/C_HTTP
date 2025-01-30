@@ -8,12 +8,9 @@
 
 struct request_s {
     char *raw_request;
-    char *uri;
-    char *method;
-    char *version;
-    char *rest;
     char ip[INET_ADDRSTRLEN];
     struct header_s headers;
+    char *body;
 };
 
 /**

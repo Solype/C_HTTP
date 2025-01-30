@@ -1,6 +1,8 @@
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <arpa/inet.h>
 
 #include "http_server.h"
@@ -12,6 +14,7 @@ static bool http_server_running = true;
 
 static void handle_sig(int sig __attribute__((unused)))
 {
+    fprintf(stderr, "\n");
     http_server_running = false;
 }
 
@@ -20,8 +23,10 @@ static void handle_client(int client_socket)
     struct request_s request;
     const char *response = "HTTP/1.1 400 OK\r\n";
 
-    request_init(&request, client_socket);
-
+    if (request_init(&request, client_socket) != EXIT_SUCCESS) {
+        return;
+    }
+    request_destroy(&request);
     if (write(client_socket, response, strlen(response)) == -1) {
         log_error("Failed to write to client");
     }

@@ -1,9 +1,10 @@
-from requests import get
+#!/usr/bin/env python
 
-for _ in range(10):
-    result = get("http://localhost:8080/api")
-    print(result)
-    # print(result.text)
-    # print(result.status_code)
-    # print(result.reason)
-    # print(result.ok)
+from requests import get, post
+
+url = "http://127.0.0.1:8080"
+
+post(url, data="test", headers={"Authorization": "Bearer test"})
+post(url, json={"test": "test"})
+get(url)
+get(url, params={"test": "test"})

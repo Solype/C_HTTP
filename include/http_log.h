@@ -20,6 +20,6 @@ int log_success(const char *message, ...);
 int log_error(const char *message, ...);
 int log_warning(const char *message, ...);
 int log_info(const char *message, ...);
-
+int log_space(void);
 
 #endif /* !HTTP_LOG_H_ */

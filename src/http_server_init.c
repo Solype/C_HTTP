@@ -10,11 +10,12 @@ int http_server_init(struct http_server_s *server, int port, int nb)
 {
     int opt = 1;
 
+    server->clean_quit = false;
     server->socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server->socket < 0) {
         return log_error("Failed to create socket");
     }
-    log_success("Socket created");
+    log_info("Socket created");
 
     if (setsockopt(server->socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
         log_warning("Failed to set socket options");
@@ -30,12 +31,12 @@ int http_server_init(struct http_server_s *server, int port, int nb)
         close(server->socket);
         return log_error("Failed to bind socket");;
     }
-    log_success("Socket binded");
+    log_info("Socket binded");
     if (listen(server->socket, nb) < 0) {
         close(server->socket);
         return log_error("Failed to listen on socket");;
     }
-    return log_success("Server started");
+    return log_info("Server started at http://%s:%d", inet_ntoa(server->addr.sin_addr), port);
 }
 
 int http_server_destroy(struct http_server_s *server)
