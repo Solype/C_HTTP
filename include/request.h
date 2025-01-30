@@ -1,3 +1,5 @@
+#include <arpa/inet.h>
+
 #include "header.h"
 
 #ifndef REQUEST_H_
@@ -10,6 +12,7 @@ struct request_s {
     char *method;
     char *version;
     char *rest;
+    char ip[INET_ADDRSTRLEN];
     struct header_s headers;
 };
 
@@ -19,7 +22,7 @@ struct request_s {
  * @param request The request structure to initialize
  * @param raw_request The raw request to parse
  */
-int request_init(struct request_s *request, char *raw_request);
+int request_init(struct request_s *request, int client_socket);
 
 /**
  * @brief Destroy the request structure

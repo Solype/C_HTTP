@@ -8,11 +8,17 @@
 
 int http_server_init(struct http_server_s *server, int port, int nb)
 {
+    int opt = 1;
+
     server->socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server->socket < 0) {
         return log_error("Failed to create socket");
     }
     log_success("Socket created");
+
+    if (setsockopt(server->socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
+        log_warning("Failed to set socket options");
+    }
 
     server->addr = (struct sockaddr_in) {
         .sin_family = AF_INET,

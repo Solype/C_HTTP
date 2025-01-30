@@ -15,36 +15,13 @@ static void handle_sig(int sig __attribute__((unused)))
     http_server_running = false;
 }
 
-
 static void handle_client(int client_socket)
 {
     struct request_s request;
-    char buffer[1024] = {0}; // Initialise le buffer à 0
-    ssize_t bytes_read = read(client_socket, buffer, sizeof(buffer) - 1);
-
-    if (bytes_read <= 0) {
-        log_error("Failed to read from client");
-        close(client_socket);
-        return;
-    }
-
-    struct sockaddr_in client_addr;
-    socklen_t addr_len = sizeof(client_addr);
-
-    if (getpeername(client_socket, (struct sockaddr*)&client_addr, &addr_len) == 0) {
-        char client_ip[INET_ADDRSTRLEN]; // Stocke l'IP en format lisible
-        inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
-        log_info("Client connected : %s:%d", client_ip, ntohs(client_addr.sin_port));
-    } else {
-        log_error("getpeername failed");
-    }
-
-
-
-    request_init(&request, buffer);
-
-
     const char *response = "HTTP/1.1 400 OK\r\n";
+
+    request_init(&request, client_socket);
+
     if (write(client_socket, response, strlen(response)) == -1) {
         log_error("Failed to write to client");
     }
