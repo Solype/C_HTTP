@@ -16,7 +16,7 @@ typedef enum {
 struct http_server_s {
     int socket;
     struct sockaddr_in addr;
-    bool is_running;
+    bool clean_quit;
 };
 
 /**

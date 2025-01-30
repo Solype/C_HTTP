@@ -11,7 +11,10 @@ set(EXECUTABLE_NAME server_http_https)
 set(SOURCES
     main.c
     src/http_server_init.c
+    src/http_server_run.c
     src/request.c
+    src/header.c
+    src/http_log.c
 )
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})

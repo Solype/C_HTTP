@@ -1,3 +1,5 @@
+#include "header.h"
+
 #ifndef REQUEST_H_
     #define REQUEST_H_
 
@@ -8,6 +10,7 @@ struct request_s {
     char *method;
     char *version;
     char *rest;
+    struct header_s headers;
 };
 
 /**
@@ -25,14 +28,6 @@ int request_init(struct request_s *request, char *raw_request);
  * @return 0 on success, -1 on failure
  */
 int request_destroy(struct request_s *request);
-
-/**
- * @brief display the request structure
- * 
- * @param request The request structure to display
- * @return 0 on success, -1 on failure
- */
-int request_display(struct request_s *request);
 
 
 #endif /* !REQUEST_H_ */
