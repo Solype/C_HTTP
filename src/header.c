@@ -55,6 +55,9 @@ static int init_pairs(struct header_s *header, char *raw_request, char **body)
         if (header->pairs[i].key == NULL) {
             return log_error("Invalid key header");
         }
+        if (header->pairs[i].key[0] == '\n') {
+            header->pairs[i].key++;
+        }
         raw_request = save_pointer;
         header->pairs[i].value = __strtok_r(raw_request, "\r\n", &save_pointer);
         if (header->pairs[i].value == NULL) {
