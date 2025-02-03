@@ -15,6 +15,7 @@ set(SOURCES
     src/request.c
     src/header.c
     src/http_log.c
+    src/router.c
 )
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})

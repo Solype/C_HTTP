@@ -1,0 +1,30 @@
+#include "request.h"
+
+#ifndef ROUTE_TREE_H_
+    #define ROUTE_TREE_H_
+
+typedef int (*handler_t)(struct request_s *request);
+
+struct route_tree_s {
+    char *path;
+    struct route_tree_s *child;
+    handler_t handler;
+};
+
+
+typedef struct route_s {
+    char *path;
+    char *method;
+    handler_t handler;
+} route_t;
+
+
+
+
+typedef void *router_t;
+
+router_t *route_tree_init(route_t routes[]);
+
+void route_tree_destroy(router_t *tree);
+
+#endif /* !ROUTE_TREE_H_ */

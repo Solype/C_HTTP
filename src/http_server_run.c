@@ -21,7 +21,7 @@ static void handle_sig(int sig __attribute__((unused)))
 static void handle_client(int client_socket)
 {
     struct request_s request;
-    const char *response = "HTTP/1.1 400 OK\r\n";
+    const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 11\r\n\r\nbonjour";
 
     if (request_init(&request, client_socket) != EXIT_SUCCESS) {
         return;
@@ -37,6 +37,8 @@ int http_server_run(struct http_server_s *server)
 {
     if (server->clean_quit == true) {
         signal(SIGINT, handle_sig);
+    } else {
+        log_warning("Clean quit not enabled");
     }
     while (http_server_running == true) {
         struct sockaddr_in client_addr;
