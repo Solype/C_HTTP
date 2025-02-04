@@ -30,7 +30,8 @@ struct header_s {
     char *version;
     struct string_pair *pairs;
     struct string_pair *query_params;
-    int count;
+    int header_count;
+    int query_param_count;
 };
 
 

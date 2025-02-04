@@ -43,14 +43,14 @@ static int init_pairs(struct header_s *header, char *raw_request, char **body)
 {
     char *save_pointer;
 
-    header->count = count_header_lines(raw_request) - 2;
-    header->pairs = calloc(header->count, sizeof(struct string_pair));
+    header->header_count = count_header_lines(raw_request) - 2;
+    header->pairs = calloc(header->header_count, sizeof(struct string_pair));
     if (header->pairs == NULL) {
         return log_error("Failed to allocate memory");
     }
     raw_request = strchr(raw_request, '\n') + 1;
 
-    for (int i = 0; i < header->count; i++) {
+    for (int i = 0; i < header->header_count; i++) {
         header->pairs[i].key = __strtok_r(raw_request, ": ", &save_pointer);
         if (header->pairs[i].key == NULL) {
             return log_error("Invalid key header");
@@ -82,24 +82,37 @@ static int query_param_count(char const *query)
     return count;
 }
 
-static void init_query(struct header_s *header)
+static int init_query(struct header_s *header)
 {
     char *query = strchr(header->uri, '?');
-    // char *save_pointer;
-    int query_count = 0;
+    char *save_pointer;
 
     if (query == NULL) {
-        log_warning("No query on %s", header->uri);
-        return;
+        return log_info("No query on %s", header->uri);;
     }
-    // *query = '\0';
-    // query++;
-    query_count = query_param_count(query) + 1;
-
-    log_info("Number of query infos: %d", query_count);
-    // while (query != NULL && *query != '\0') {
-        
-    // }
+    *query = '\0';
+    query++;
+    header->query_param_count = query_param_count(query) + 1;
+    header->query_params = malloc(sizeof(struct string_pair[header->query_param_count]));
+    if (header->query_params == NULL) {
+        return log_error("Failed to allocate memory");
+    }
+    for (int i = 0; i < header->query_param_count; i++) {
+        header->query_params[i].key = __strtok_r(query, "=", &save_pointer);
+        if (header->query_params[i].key == NULL) {
+            return log_error("Invalid key query");
+        }
+        if (header->query_params[i].key[0] == '\n') {
+            header->query_params[i].key++;
+        }
+        query = save_pointer;
+        header->query_params[i].value = __strtok_r(query, "&", &save_pointer);
+        if (header->query_params[i].value == NULL) {
+            return log_error("Invalid value query");
+        }
+        query = save_pointer;
+    }
+    return EXIT_SUCCESS;
 }
 
 int header_init(struct header_s *header, char *raw_request, char **body)
@@ -109,7 +122,6 @@ int header_init(struct header_s *header, char *raw_request, char **body)
     if (init_pairs(header, raw_request, body) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
-    log_info("%s", raw_request);
     method = __strtok_r(raw_request, " ", &(header->uri));
     header->method = get_method(method);
     __strtok_r(header->uri, " \r\n", &(header->version));
@@ -117,7 +129,7 @@ int header_init(struct header_s *header, char *raw_request, char **body)
         return log_error("Invalid request: %03b", (header->uri == NULL) << 0 | (header->version == NULL) << 1 | (header->method == ERROR) << 2);
     }
     init_query(header);
-    return log_success("Request %s with method %s and with http version : %s", header->uri, method, header->version);
+    return log_success("Request %s with method %s", header->uri, method, header->version);
 }
 
 int header_destroy(struct header_s *header)

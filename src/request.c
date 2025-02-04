@@ -31,13 +31,6 @@ int request_init(struct request_s *request, int client_socket)
     request_get_ip(request, client_socket);
     header_init(&request->headers, request->raw_request, &body);
     request->body = body;
-    log_info("Body received: %s", request->body);
-    for (int i = 0; i < request->headers.count; i++) {
-        log_info("\t%s: %s", request->headers.pairs[i].key, request->headers.pairs[i].value);
-        if (request->headers.pairs[i].key[0] == '\n') {
-            log_warning("\\n detected in header");
-        }
-    }
     return 0;
 }
 
