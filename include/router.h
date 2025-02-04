@@ -5,9 +5,10 @@
 
 typedef int (*handler_t)(struct request_s *request);
 
-struct route_tree_s {
+struct __route_tree_s {
     char *path;
-    struct route_tree_s *child;
+    struct __route_tree_s *child;
+    struct __route_tree_s *default_child;
     handler_t handler;
 };
 
@@ -17,8 +18,6 @@ typedef struct route_s {
     char *method;
     handler_t handler;
 } route_t;
-
-
 
 
 typedef void *router_t;

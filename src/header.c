@@ -69,22 +69,55 @@ static int init_pairs(struct header_s *header, char *raw_request, char **body)
     return EXIT_SUCCESS;
 }
 
+static int query_param_count(char const *query)
+{
+    int count = 0;
+
+    while (*query != '\0') {
+        if (*query == '&') {
+            count++;
+        }
+        query++;
+    }
+    return count;
+}
+
+static void init_query(struct header_s *header)
+{
+    char *query = strchr(header->uri, '?');
+    // char *save_pointer;
+    int query_count = 0;
+
+    if (query == NULL) {
+        log_warning("No query on %s", header->uri);
+        return;
+    }
+    // *query = '\0';
+    // query++;
+    query_count = query_param_count(query) + 1;
+
+    log_info("Number of query infos: %d", query_count);
+    // while (query != NULL && *query != '\0') {
+        
+    // }
+}
+
 int header_init(struct header_s *header, char *raw_request, char **body)
 {
-    char *method = raw_request;
-    char *save_pointer;
+    char *method;
 
     if (init_pairs(header, raw_request, body) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
-    header->uri = __strtok_r(method, " ", &save_pointer);
+    log_info("%s", raw_request);
+    method = __strtok_r(raw_request, " ", &(header->uri));
     header->method = get_method(method);
-    method = save_pointer;
-    header->version = __strtok_r(method, "\r\n", &save_pointer);
+    __strtok_r(header->uri, " \r\n", &(header->version));
     if (header->uri == NULL || header->version == NULL || header->method == ERROR) {
         return log_error("Invalid request: %03b", (header->uri == NULL) << 0 | (header->version == NULL) << 1 | (header->method == ERROR) << 2);
     }
-    return log_success("Request %s with method %s", header->uri, method);
+    init_query(header);
+    return log_success("Request %s with method %s and with http version : %s", header->uri, method, header->version);
 }
 
 int header_destroy(struct header_s *header)

@@ -21,7 +21,13 @@ static void handle_sig(int sig __attribute__((unused)))
 static void handle_client(int client_socket)
 {
     struct request_s request;
-    const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 11\r\n\r\nbonjour";
+    const char *response =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/plain\r\n"
+        "Content-Length: 7\r\n"
+        "Connection: close\r\n\r\n"
+        "bonjour";
+
 
     if (request_init(&request, client_socket) != EXIT_SUCCESS) {
         return;

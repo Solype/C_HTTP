@@ -29,6 +29,7 @@ struct header_s {
     char *uri;
     char *version;
     struct string_pair *pairs;
+    struct string_pair *query_params;
     int count;
 };
 
