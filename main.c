@@ -8,11 +8,22 @@
 
 #define PORT 8080
 
+static route_t routes[] = {
+    {.handler = NULL, .method = "GET", .path = "/"},
+    {.handler = NULL, .method = "GET", .path = "/api"},
+    {.handler = NULL, .method = "GET", .path = "/aa"},
+    {.handler = NULL, .method = "GET", .path = "/api/coucou"},
+    {.handler = NULL, .method = "GET", .path = "/bb"},
+    {.handler = NULL, .method = "GET", .path = "/bb/ping"},
+};
+
 int main() {
-    struct http_server_s server;
-    http_server_init(&server, PORT, 5);
-    http_server_enable_clean_quit(&server);
-    http_server_run(&server);
-    http_server_destroy(&server);
+    // struct http_server_s server;
+    // http_server_init(&server, PORT, 5);
+    // http_server_enable_clean_quit(&server);
+    // http_server_run(&server);
+    // http_server_destroy(&server);
+    router_t router = router_init(routes, sizeof(routes) / sizeof(route_t));
+    router_destroy(router);
     return 0;
 }

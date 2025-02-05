@@ -22,8 +22,8 @@ typedef struct route_s {
 
 typedef void *router_t;
 
-router_t *route_tree_init(route_t routes[]);
+router_t *router_init(route_t routes[], size_t nb_routes);
 
-void route_tree_destroy(router_t *tree);
+void router_destroy(router_t *tree);
 
 #endif /* !ROUTE_TREE_H_ */
