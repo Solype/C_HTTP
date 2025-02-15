@@ -1,4 +1,5 @@
 #include "request.h"
+#include "http_method.h"
 
 #ifndef ROUTE_TREE_H_
     #define ROUTE_TREE_H_
@@ -9,7 +10,7 @@ struct __route_tree_s {
     char *path;
     struct __route_tree_s *child;
     struct __route_tree_s *default_child;
-    handler_t handler;
+    handler_t handler[NB_METHODS];
 };
 
 

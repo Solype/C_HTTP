@@ -10,7 +10,7 @@ struct string_pair {
 };
 
 struct header_s {
-    method_e method;
+    enum method_e method;
     char *uri;
     char *version;
     struct string_pair *pairs;

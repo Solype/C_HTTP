@@ -3,6 +3,7 @@
 #include "http_method.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 static int route_init(struct __route_tree_s *route)
 {
@@ -12,10 +13,17 @@ static int route_init(struct __route_tree_s *route)
 
 static void swap_route(route_t *a, route_t *b)
 {
-    route_t tmp = *a;
+    a->path = (char *)((uintptr_t)b->path ^ (uintptr_t)a->path);
+    b->path = (char *)((uintptr_t)b->path ^ (uintptr_t)a->path);
+    a->path = (char *)((uintptr_t)b->path ^ (uintptr_t)a->path);
 
-    *a = *b;
-    *b = tmp;
+    a->method = (char *)((uintptr_t)b->method ^ (uintptr_t)a->method);
+    b->method = (char *)((uintptr_t)b->method ^ (uintptr_t)a->method);
+    a->method = (char *)((uintptr_t)b->method ^ (uintptr_t)a->method);
+
+    a->handler = (handler_t)((uintptr_t)b->handler ^ (uintptr_t)a->handler);
+    b->handler = (handler_t)((uintptr_t)b->handler ^ (uintptr_t)a->handler);
+    a->handler = (handler_t)((uintptr_t)b->handler ^ (uintptr_t)a->handler);
 }
 
 static void sort_routes(route_t routes[], size_t nb_routes)
@@ -26,7 +34,7 @@ static void sort_routes(route_t routes[], size_t nb_routes)
 
     for (size_t i = 0; i < nb_routes - 1; ++i) {
         for (size_t j = i + 1; j < nb_routes; ++j) {
-            if (strcmp(routes[i].path, routes[j].path) > 1) {
+            if (strcmp(routes[i].path, routes[j].path) > 0) {
                 swap_route(&(routes[i]), &(routes[j]));
             }
         }
@@ -44,9 +52,8 @@ static int test_route_method_validity(route_t *routes)
     return EXIT_SUCCESS;
 }
 
-static size_t check_routes_validity(route_t routes[], size_t nb_routes)
+static size_t remove_route_uninitializable(route_t routes[], size_t nb_routes)
 {
-    size_t removed_routes = 0;
     int error = 0;
 
     for (size_t i = 0; i < nb_routes; ++i) {
@@ -58,10 +65,10 @@ static size_t check_routes_validity(route_t routes[], size_t nb_routes)
         if (routes[i].method == NULL || test_route_method_validity(&routes[i]) != EXIT_SUCCESS)
             error = 1 + log_warning("Route has no method or invalid method and will be ignored");
         if (error == 1) {
-            ++removed_routes;
+            log_info("Removing route %s, replacing it with : %s", routes[i].path, routes[nb_routes - 1].path);
             routes[i] = routes[nb_routes - 1];
             --i;
-            nb_routes -= 1;
+            --nb_routes;
         }
     }
     return nb_routes;
@@ -75,19 +82,18 @@ router_t *router_init(route_t routes[], size_t nb_routes)
         return NULL;
     }
     log_info("Checking routes validity");
-    nb_routes = check_routes_validity(routes, nb_routes);
+    nb_routes = remove_route_uninitializable(routes, nb_routes);
     root->child = NULL;
     root->default_child = NULL;
-    root->handler = NULL;
+    memset(root->handler, 0, sizeof(root->handler));
     root->path = NULL;
     log_info("Sorting routes");
     sort_routes(routes, nb_routes);
-
     route_init(root);
     for (size_t i = 0; i < nb_routes; ++i) {
         log_info("Adding route %s", routes[i].path);
     }
-    return NULL;
+    return (router_t *)root;
 }
 
 void router_destroy(router_t *tree)

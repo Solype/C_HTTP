@@ -13,12 +13,13 @@ static const struct method_pair_s method_pairs[] = {
     {"TRACE", TRACE}
 };
 
-method_e get_method(char const *method)
+enum method_e get_method(char const *method)
 {
     for (unsigned int i = 0; i < sizeof(method_pairs) / sizeof(method_pairs[0]); i++) {
         if (strcmp(method, method_pairs[i].literal) == 0) {
             return method_pairs[i].method;
         }
     }
-    return log_error("Unknown method: %s", method);
+    log_error("Unknown method: %s", method);
+    return ERROR;
 }

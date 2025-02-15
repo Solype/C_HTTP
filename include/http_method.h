@@ -1,29 +1,30 @@
 #ifndef HTTP_METHOD_H_
     #define HTTP_METHOD_H_
 
-typedef enum {
+enum method_e {
     GET = 0,
-    ERROR = 1,
-    POST = 2,
-    PUT = 3,
-    DELETE = 4,
-    HEAD = 5,
-    OPTIONS = 6,
-    TRACE = 7
-} method_e;
+    POST = 1,
+    PUT = 2,
+    DELETE = 3,
+    HEAD = 4,
+    OPTIONS = 5,
+    TRACE = 6,
+    NB_METHODS = 7,
+    ERROR = -1
+} ;
 
 struct method_pair_s {
     char *literal;
-    method_e method;
+    enum method_e method;
 };
 
 /**
  * @brief Get the method enum from a string
  * 
  * @param method The string to get the method from
- * @return method_e
+ * @return method_e, see method_e enum
  */
-method_e get_method(char const *method);
+enum method_e get_method(char const *method);
 
 #endif /* !HTTP_METHOD_H_ */
 
