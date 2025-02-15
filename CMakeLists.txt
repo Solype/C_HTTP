@@ -30,7 +30,7 @@ target_compile_definitions(${EXECUTABLE_NAME} PRIVATE ENABLE_HTTPS=1)
 
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
     target_compile_options(${EXECUTABLE_NAME} PRIVATE
-        -Wall -Wextra -Wpedantic -Werror
+        -Wall -Wextra -Wpedantic -Werror -g3
     )
 endif()
 

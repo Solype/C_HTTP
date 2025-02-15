@@ -8,7 +8,7 @@ typedef int (*handler_t)(struct request_s *request);
 
 struct __route_tree_s {
     char *path;
-    struct __route_tree_s *child;
+    struct __route_tree_s *child[50];
     struct __route_tree_s *default_child;
     handler_t handler[NB_METHODS];
 };

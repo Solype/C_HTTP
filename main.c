@@ -8,14 +8,22 @@
 
 #define PORT 8080
 
+__attribute__((section(".data"))) static char a[] = "/";
+__attribute__((section(".data"))) static char b[] = "/api";
+__attribute__((section(".data"))) static char c[] = "/aa";
+__attribute__((section(".data"))) static char d[] = "/bb/ping";
+__attribute__((section(".data"))) static char e[] = "/bb";
+__attribute__((section(".data"))) static char f[] = "/api/coucou_les_amis";
+
 static route_t routes[] = {
-    {.handler = NULL, .method = "GE", .path = "/"},
-    {.handler = NULL, .method = "GET", .path = "/api"},
-    {.handler = NULL, .method = "POST", .path = "/aa"},
-    {.handler = NULL, .method = "GET", .path = "/api/coucou"},
-    {.handler = NULL, .method = "GET", .path = "/bb"},
-    {.handler = NULL, .method = "GET", .path = "/bb/ping"},
+    {.handler = NULL, .method = "GET", .path = a},
+    {.handler = NULL, .method = "GET", .path = b},
+    {.handler = NULL, .method = "GET", .path = c},
+    {.handler = NULL, .method = "GET", .path = d},
+    {.handler = NULL, .method = "GET", .path = e},
+    {.handler = NULL, .method = "GET", .path = f},
 };
+
 
 int main() {
     // struct http_server_s server;
