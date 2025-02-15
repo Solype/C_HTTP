@@ -9,10 +9,10 @@
 #define PORT 8080
 
 static route_t routes[] = {
-    {.handler = NULL, .method = "GET", .path = "/"},
+    {.handler = NULL, .method = NULL, .path = "/"},
     {.handler = NULL, .method = "GET", .path = "/api"},
-    {.handler = NULL, .method = "GET", .path = "/aa"},
-    {.handler = NULL, .method = "GET", .path = "/api/coucou"},
+    {.handler = NULL, .method = NULL, .path = "/aa"},
+    {.handler = NULL, .method = "GEazezaea", .path = "/api/coucou"},
     {.handler = NULL, .method = "GET", .path = "/bb"},
     {.handler = NULL, .method = "GET", .path = "/bb/ping"},
 };

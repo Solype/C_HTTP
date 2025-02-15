@@ -12,6 +12,7 @@ set(SOURCES
     main.c
     src/http_server_init.c
     src/http_server_run.c
+    src/http_method.c
     src/request.c
     src/header.c
     src/http_log.c

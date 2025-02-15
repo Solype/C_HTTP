@@ -1,23 +1,8 @@
-
+#include "http_method.h"
 
 #ifndef HEADER_H_
     #define HEADER_H_
 
-typedef enum {
-    GET = 0,
-    ERROR = 1,
-    POST = 2,
-    PUT = 3,
-    DELETE = 4,
-    HEAD = 5,
-    OPTIONS = 6,
-    TRACE = 7
-} method_e;
-
-struct method_pair_s {
-    char *literal;
-    method_e method;
-};
 
 struct string_pair {
     char *key;
