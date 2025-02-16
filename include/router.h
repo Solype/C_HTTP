@@ -4,12 +4,17 @@
 #ifndef ROUTE_TREE_H_
     #define ROUTE_TREE_H_
 
+    #define HTTP_ROUTE_CHILD_COUNT 50
+
 typedef int (*handler_t)(struct request_s *request);
 
 struct __route_tree_s {
     char *path;
-    struct __route_tree_s *child[50];
+    size_t path_len;
+    struct __route_tree_s *child[HTTP_ROUTE_CHILD_COUNT];
     struct __route_tree_s *default_child;
+    size_t childs_count[HTTP_ROUTE_CHILD_COUNT];
+    size_t default_childs_count;
     handler_t handler[NB_METHODS];
 };
 
