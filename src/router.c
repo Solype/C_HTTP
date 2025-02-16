@@ -132,6 +132,21 @@ static int insert_route(struct __route_tree_s *tree, route_t *route)
 }
 
 
+static void display_router(struct __route_tree_s *tree, size_t depth)
+{
+
+    log_info("%*s%.*s", depth * 4, "", (int)tree->path_len, tree->path);
+    for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
+        for (size_t j = 0; j < tree->childs_count[i]; ++j) {
+            display_router(&(tree->child[i][j]), depth + 1);
+        }
+    }
+    for (size_t i = 0; i < tree->default_childs_count; ++i) {
+        display_router(&(tree->default_child[i]), depth + 1);
+    }
+}
+
+
 router_t *router_init(route_t routes[], size_t nb_routes)
 {
     struct __route_tree_s *root = malloc(sizeof(struct __route_tree_s));
@@ -141,11 +156,7 @@ router_t *router_init(route_t routes[], size_t nb_routes)
     }
     log_info("Checking routes validity");
     nb_routes = remove_route_uninitializable(routes, nb_routes);
-    root->default_child = NULL;
-    memset(root->handler, 0, sizeof(root->handler));
-    memset(root->child, 0, sizeof(root->child));
-    memset(root->childs_count, 0, sizeof(root->childs_count));
-    root->default_childs_count = 0;
+    set_empty_tree_node(root);
     root->path = "/";
     root->path_len = 1;
     for (size_t i = 0; i < nb_routes; ++i) {
@@ -156,6 +167,7 @@ router_t *router_init(route_t routes[], size_t nb_routes)
             insert_route(root, &(routes[i]));
         }
     }
+    display_router(root, 0);
     return (router_t *)root;
 }
 

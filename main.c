@@ -9,10 +9,10 @@
 #define PORT 8080
 
 __attribute__((section(".data"))) static char a[] = "/";
-__attribute__((section(".data"))) static char b[] = "/api";
-__attribute__((section(".data"))) static char c[] = "/aa";
+__attribute__((section(".data"))) static char b[] = "/api/1";
+__attribute__((section(".data"))) static char c[] = "/aa/ping";
 __attribute__((section(".data"))) static char d[] = "/bb/ping";
-__attribute__((section(".data"))) static char e[] = "/bb";
+__attribute__((section(".data"))) static char e[] = "/bb/aa";
 __attribute__((section(".data"))) static char f[] = "/api/coucou_les_amis";
 
 static route_t routes[] = {
