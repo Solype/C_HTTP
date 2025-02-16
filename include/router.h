@@ -28,8 +28,30 @@ typedef struct route_s {
 
 typedef void *router_t;
 
+/**
+ * @brief Initialize a route tree
+ * 
+ * @param routes An array of routes
+ * @param nb_routes The number of routes
+ * @return A pointer to the route tree
+ */
 router_t *router_init(route_t routes[], size_t nb_routes);
 
+/**
+ * @brief Destroy a route tree
+ * 
+ * @param tree The route tree to destroy
+ */
 void router_destroy(router_t *tree);
+
+/**
+ * @brief Get a handler from a route tree
+ * 
+ * @param tree The route tree to get the handler from
+ * @param method The method of the request
+ * @param path The path of the request
+ * @return The handler of the request
+ */
+handler_t router_get_handler(router_t *tree, char const *method, char const *path);
 
 #endif /* !ROUTE_TREE_H_ */

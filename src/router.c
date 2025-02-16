@@ -33,11 +33,11 @@ static size_t remove_route_uninitializable(route_t routes[], size_t nb_routes)
     for (size_t i = 0; i < nb_routes; ++i) {
         error = 0;
         if (routes[i].path == NULL || routes[i].path[0] != '/' || strchr(routes[i].path, ' ') != NULL)
-            error = 1 + log_warning("Route has invalid path and will be ignored");
-        // if (routes[i].handler == NULL)
-        //     error = 1 + log_warning("Route has no handler and will be ignored");
+            error = log_error("Route has invalid path and will be ignored");
+        if (routes[i].handler == NULL)
+            error = log_error("Route has no handler and will be ignored");
         if (routes[i].method == NULL || test_route_method_validity(&routes[i]) != EXIT_SUCCESS)
-            error = 1 + log_warning("Route has no method or invalid method and will be ignored");
+            error = log_error("Route has no method or invalid method and will be ignored");
         if (error == 1) {
             routes[i] = routes[nb_routes - 1];
             --i;
@@ -76,7 +76,6 @@ static int check_if_child_already_exists(struct __route_tree_s *tree, int index,
         return -1;
     }
     for (size_t i = 0; i < tree->childs_count[index]; ++i) {
-        log_info("Checking %s against %s", tree->child[index][i].path, path);
         if (strncmp(tree->child[index][i].path, path, path_len) == 0) {
             return i;
         }
@@ -117,6 +116,7 @@ static int insert_route(struct __route_tree_s *tree, route_t *route)
         if (subindex == -1) {
             return EXIT_FAILURE;
         }
+        tree->child[index][subindex].handler[get_method(route->method)] = route->handler;
     } else {
         route->path = slash_addr;
         subindex = ((intptr_t)save_pointer > (intptr_t)route->path) ? save_pointer - route->path : route->path - save_pointer;
@@ -135,7 +135,7 @@ static int insert_route(struct __route_tree_s *tree, route_t *route)
 static void display_router(struct __route_tree_s *tree, size_t depth)
 {
 
-    log_info("%*s%.*s", depth * 4, "", (int)tree->path_len, tree->path);
+    log_info("%*s%.*s", depth * 2, "", (int)tree->path_len, tree->path);
     for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
         for (size_t j = 0; j < tree->childs_count[i]; ++j) {
             display_router(&(tree->child[i][j]), depth + 1);
@@ -146,6 +146,33 @@ static void display_router(struct __route_tree_s *tree, size_t depth)
     }
 }
 
+handler_t router_get_handler(router_t *tree, char const *method, char const *path)
+{
+    struct __route_tree_s *root = (struct __route_tree_s *)tree;
+    char const *save_pointer = path;
+    char *slash_addr = strchr(path + 1, '/');
+    int index;
+    int subindex;
+
+    if (path[0] == '/' && path[1] == '\0') {
+        return root->handler[get_method(method)];
+    }
+    if (slash_addr == NULL) {
+        index = hash(path, strlen(path));
+        subindex = check_if_child_already_exists(root, index, path, strlen(path));
+        if (subindex == -1) {
+            return NULL;
+        }
+        return root->child[index][subindex].handler[get_method(method)];
+    } else {
+        path = slash_addr;
+        subindex = ((intptr_t)save_pointer > (intptr_t)path) ? save_pointer - path : path - save_pointer;
+        index = hash(save_pointer, subindex);
+        subindex = check_if_child_already_exists(root, index, save_pointer, subindex);
+        if (subindex == -1) return NULL;
+        return router_get_handler((router_t)(&(root->child[index][subindex])), method, path);
+    }
+}
 
 router_t *router_init(route_t routes[], size_t nb_routes)
 {
@@ -160,9 +187,8 @@ router_t *router_init(route_t routes[], size_t nb_routes)
     root->path = "/";
     root->path_len = 1;
     for (size_t i = 0; i < nb_routes; ++i) {
-        log_info("Inserting route %s", routes[i].path);
         if (routes[i].path[1] == '\0') {
-            log_info("found the root, root");
+            root->handler[get_method(routes[i].method)] = routes[i].handler;
         } else {
             insert_route(root, &(routes[i]));
         }
