@@ -149,29 +149,30 @@ static void display_router(struct __route_tree_s *tree, size_t depth)
 handler_t router_get_handler(router_t *tree, char const *method, char const *path)
 {
     struct __route_tree_s *root = (struct __route_tree_s *)tree;
-    char const *save_pointer = path;
-    char *slash_addr = strchr(path + 1, '/');
+    char const *save_pointer;
+    char *slash_addr;
     int index;
     int subindex;
 
     if (path[0] == '/' && path[1] == '\0') {
         return root->handler[get_method(method)];
     }
-    if (slash_addr == NULL) {
-        index = hash(path, strlen(path));
-        subindex = check_if_child_already_exists(root, index, path, strlen(path));
-        if (subindex == -1) {
-            return NULL;
+    while (1) {
+        save_pointer = path;
+        slash_addr = strchr(path + 1, '/');
+        if (slash_addr == NULL) {
+            index = hash(path, strlen(path));
+            subindex = check_if_child_already_exists(root, index, path, strlen(path));
+            return (subindex == -1) ? NULL : root->child[index][subindex].handler[get_method(method)];
         }
-        return root->child[index][subindex].handler[get_method(method)];
-    } else {
         path = slash_addr;
         subindex = ((intptr_t)save_pointer > (intptr_t)path) ? save_pointer - path : path - save_pointer;
         index = hash(save_pointer, subindex);
         subindex = check_if_child_already_exists(root, index, save_pointer, subindex);
         if (subindex == -1) return NULL;
-        return router_get_handler((router_t)(&(root->child[index][subindex])), method, path);
+        root = &(root->child[index][subindex]);
     }
+    return NULL;
 }
 
 int router_add_route(router_t *tree, route_t *route)
