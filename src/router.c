@@ -55,7 +55,7 @@ static int hash(char const *path, int size)
 
     for (int i = 0; path[i] != '\0' && i < size; ++i) {
         hash += path[i] + i;
-        hash = hash % 50;
+        hash = hash % HTTP_ROUTE_CHILD_COUNT;
     }
     return hash;
 }
@@ -172,6 +172,17 @@ handler_t router_get_handler(router_t *tree, char const *method, char const *pat
         if (subindex == -1) return NULL;
         return router_get_handler((router_t)(&(root->child[index][subindex])), method, path);
     }
+}
+
+int router_add_route(router_t *tree, route_t *route)
+{
+    if (tree == NULL) {
+        return log_error("Router is not initialized");
+    }
+    if (route == NULL) {
+        return log_error("Route is not initialized");
+    }
+    return insert_route((struct __route_tree_s *)tree, route);
 }
 
 router_t *router_init(route_t routes[], size_t nb_routes)

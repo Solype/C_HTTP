@@ -4,7 +4,7 @@
 #ifndef ROUTE_TREE_H_
     #define ROUTE_TREE_H_
 
-    #define HTTP_ROUTE_CHILD_COUNT 50
+    #define HTTP_ROUTE_CHILD_COUNT 40
 
 typedef int (*handler_t)(struct request_s *request);
 
@@ -53,5 +53,13 @@ void router_destroy(router_t *tree);
  * @return The handler of the request
  */
 handler_t router_get_handler(router_t *tree, char const *method, char const *path);
+
+/**
+ * @brief Add a route to a route tree
+ * 
+ * @param tree The route tree to add the route to
+ * @param route The route to add
+ */
+int router_add_route(router_t *tree, route_t *route);
 
 #endif /* !ROUTE_TREE_H_ */

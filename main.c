@@ -13,7 +13,7 @@ __attribute__((section(".data"))) static char a[] = "/";
 __attribute__((section(".data"))) static char b[] = "/api/1";
 __attribute__((section(".data"))) static char c[] = "/aa/ping";
 __attribute__((section(".data"))) static char d[] = "/bb/ping";
-__attribute__((section(".data"))) static char e[] = "/bb/aa";
+__attribute__((section(".data"))) static char e[] = "/bb/aa/cc/dd";
 __attribute__((section(".data"))) static char f[] = "/api/coucou_les_amis";
 
 static int handler_a(struct request_s *request)
@@ -64,7 +64,7 @@ static route_t routes[] = {
     {.handler = handler_c, .method = "GET", .path = c},
     {.handler = handler_d, .method = "GET", .path = d},
     {.handler = handler_e, .method = "GET", .path = e},
-    {.handler = handler_f, .method = "GET", .path = f},
+    // {.handler = handler_f, .method = "GET", .path = f},
 };
 
 
@@ -85,6 +85,8 @@ int main() {
     h(NULL);
     h = router_get_handler(router, "GET", e);
     h(NULL);
+    route_t new = {.handler = handler_f, .method = "GET", .path = f};
+    router_add_route(router, &new);
     h = router_get_handler(router, "GET", f);
     h(NULL);
     router_destroy(router);
