@@ -17,6 +17,8 @@ set(SOURCES
     src/header.c
     src/http_log.c
     src/router.c
+    src/router_get_handler.c
+    src/router_utils.c
 )
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})

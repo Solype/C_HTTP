@@ -1,5 +1,6 @@
 #include "http_log.h"
 #include "router.h"
+#include "router_utils.h"
 #include "http_method.h"
 #include <stdlib.h>
 #include <string.h>
@@ -49,26 +50,6 @@ static size_t remove_route_uninitializable(route_t routes[], size_t nb_routes)
     return nb_routes;
 }
 
-static int hash(char const *path, int size)
-{
-    int hash = 0;
-
-    for (int i = 0; path[i] != '\0' && i < size; ++i) {
-        hash += path[i] + i;
-        hash = hash % HTTP_ROUTE_CHILD_COUNT;
-    }
-    return hash;
-}
-
-static void set_empty_tree_node(struct __route_tree_s *tree)
-{
-    tree->default_child = NULL;
-    memset(tree->handler, 0, sizeof(tree->handler));
-    memset(tree->child, 0, sizeof(tree->child));
-    memset(tree->childs_count, 0, sizeof(tree->childs_count));
-    tree->path = NULL;
-}
-
 static int check_if_child_already_exists(struct __route_tree_s *children, size_t nb_child, char const *path, size_t const path_len)
 {
     if (nb_child == 0) {
@@ -105,40 +86,48 @@ static int insert_new_child(struct __route_tree_s *tree, int index, char *path, 
 
 static struct __route_tree_s *check_default_child(struct __route_tree_s *tree, route_t *route)
 {
-    // int subbindex;
-    // char *next_slash;
     (void)tree;
 
-    log_info("Checking default child %s", route->path);
     if (strncmp(route->path, "/*/", 3) == 0) {
-        log_warning("found default child");
         route->path += 2;
-        log_error("Path is now %s", route->path);
         if (tree->default_child != NULL) {
             return tree->default_child;
         }
         tree->default_child = malloc(sizeof(struct __route_tree_s));
         set_empty_tree_node(tree->default_child);
         return tree->default_child;
-        // tree->default_child = realloc(tree->default_child, sizeof(struct __route_tree_s) * (len + 1));
-        // if (tree->default_child == NULL) {
-        //     return -log_error("Failed to allocate memory");
-        // }
-        // set_empty_tree_node(&(tree->default_child[len]));
-        // tree->default_child[len].path = route->path;
-        // tree->default_child[len].path_len = strlen(route->path) - 2;
-        // tree->default_childs_count = len + 1;
-        // return EXIT_SUCCESS;
     }
     return NULL;
+}
+
+static int finally_insert_handler(struct __route_tree_s *tree, route_t *route)
+{
+    int index = hash(route->path, strlen(route->path));
+    int subindex = insert_new_child(tree, index, route->path, strlen(route->path));
+
+    if (subindex == -1) {
+        return EXIT_FAILURE;
+    }
+    tree->child[index][subindex].handler[get_method(route->method)] = route->handler;
+    return EXIT_SUCCESS;
+}
+
+static struct __route_tree_s *dive_deeper_in_the_tree(struct __route_tree_s *tree, route_t *route, char *save_pointer)
+{
+    int subindex = ((intptr_t)save_pointer > (intptr_t)route->path) ? save_pointer - route->path : route->path - save_pointer;
+    int index = hash(save_pointer, subindex);
+
+    subindex = insert_new_child(tree, index, save_pointer, subindex);
+    if (subindex == -1) {
+        return NULL;
+    }
+    return &(tree->child[index][tree->childs_count[index] - 1]);
 }
 
 static int insert_route(struct __route_tree_s *tree, route_t *route)
 {
     char *save_pointer;
     char *slash_addr;
-    int index;
-    int subindex;
     struct __route_tree_s *tmp = NULL;
 
     while (1) {
@@ -150,26 +139,16 @@ static int insert_route(struct __route_tree_s *tree, route_t *route)
             continue;
         }
         if (slash_addr == NULL) {
-            index = hash(route->path, strlen(route->path));
-            subindex = insert_new_child(tree, index, save_pointer, strlen(route->path));
-            if (subindex == -1) {
-                return EXIT_FAILURE;
-            }
-            tree->child[index][subindex].handler[get_method(route->method)] = route->handler;
-            return EXIT_SUCCESS;
+            return finally_insert_handler(tree, route);
         }
         route->path = slash_addr;
-        subindex = ((intptr_t)save_pointer > (intptr_t)route->path) ? save_pointer - route->path : route->path - save_pointer;
-        index = hash(save_pointer, subindex);
-        subindex = insert_new_child(tree, index, save_pointer, subindex);
-        if (subindex == -1) {
+        tree = dive_deeper_in_the_tree(tree, route, save_pointer);
+        if (tree == NULL) {
             return EXIT_FAILURE;
         }
-        tree = &(tree->child[index][tree->childs_count[index] - 1]);
     }
     return EXIT_SUCCESS;
 }
-
 
 static void display_router(struct __route_tree_s *tree, size_t depth)
 {
@@ -186,35 +165,6 @@ static void display_router(struct __route_tree_s *tree, size_t depth)
         log_info("%*sdefault", depth * 2, "");
         display_router(tree->default_child, depth + 1);
     }
-}
-
-handler_t router_get_handler(router_t *tree, char const *method, char const *path)
-{
-    struct __route_tree_s *root = (struct __route_tree_s *)tree;
-    char const *save_pointer;
-    char *slash_addr;
-    int index;
-    int subindex;
-
-    if (path[0] == '/' && path[1] == '\0') {
-        return root->handler[get_method(method)];
-    }
-    while (1) {
-        save_pointer = path;
-        slash_addr = strchr(path + 1, '/');
-        if (slash_addr == NULL) {
-            index = hash(path, strlen(path));
-            subindex = check_if_child_already_exists(root->child[index], root->childs_count[index], path, strlen(path));
-            return (subindex == -1) ? NULL : root->child[index][subindex].handler[get_method(method)];
-        }
-        path = slash_addr;
-        subindex = ((intptr_t)save_pointer > (intptr_t)path) ? save_pointer - path : path - save_pointer;
-        index = hash(save_pointer, subindex);
-        subindex = check_if_child_already_exists(root->child[index], root->childs_count[index], save_pointer, subindex);
-        if (subindex == -1) return NULL;
-        root = &(root->child[index][subindex]);
-    }
-    return NULL;
 }
 
 int router_add_route(router_t *tree, route_t *route)
@@ -249,22 +199,6 @@ router_t *router_init(route_t routes[], size_t nb_routes)
     }
     display_router(root, 0);
     return (router_t *)root;
-}
-
-void router_destroy(router_t *tree)
-{
-    struct __route_tree_s *root = (struct __route_tree_s *)tree;
-
-    if (root == NULL) {
-        return;
-    }
-    for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
-        for (size_t j = 0; j < root->childs_count[i]; ++j) {
-            router_destroy((router_t)(&(root->child[i][j])));
-        }
-    }
-    router_destroy((router_t)((root->default_child)));
-    free(root);
 }
 
 

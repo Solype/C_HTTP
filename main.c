@@ -87,8 +87,8 @@ int main() {
     h(NULL);
     // route_t new = {.handler = handler_f, .method = "GET", .path = f};
     // router_add_route(router, &new);
-    // h = router_get_handler(router, "GET", f);
-    // h(NULL);
+    h = router_get_handler(router, "GET", "/api/efeadfezfrezf/coucou_les_amis/test");
+    h(NULL);
     router_destroy(router);
     // printf("%ld\n", sizeof(void *));
     return 0;
