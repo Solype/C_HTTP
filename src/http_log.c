@@ -40,7 +40,7 @@ int log_warning(const char *message, ...)
     va_list args;
 
     va_start(args, message);
-    fprintf(stderr, "[" YELLOW "WARNINGS" RESET "] ");
+    fprintf(stderr, "[" YELLOW "WARNING" RESET "] ");
     vfprintf(stderr, message, args);
     fprintf(stderr, "\n");
     va_end(args);

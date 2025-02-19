@@ -14,7 +14,6 @@ struct __route_tree_s {
     struct __route_tree_s *child[HTTP_ROUTE_CHILD_COUNT];
     struct __route_tree_s *default_child;
     size_t childs_count[HTTP_ROUTE_CHILD_COUNT];
-    size_t default_childs_count;
     handler_t handler[NB_METHODS];
 };
 
