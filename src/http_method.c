@@ -24,7 +24,7 @@ enum method_e get_method(char const *method)
     return ERROR;
 }
 
-char const * const get_method_name(enum method_e method) {
+char const *get_method_name(enum method_e method) {
     switch (method) {
         case GET:
             return "GET";

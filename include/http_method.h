@@ -32,7 +32,7 @@ enum method_e get_method(char const *method);
  * @param method The method to get the name from
  * @return char const * const, the name of the method
  */
-char const * const get_method_name(enum method_e method) {
+char const *get_method_name(enum method_e method);
 
 #endif /* !HTTP_METHOD_H_ */
 

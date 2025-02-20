@@ -6,13 +6,13 @@
 #include <string.h>
 #include <stdint.h>
 
-static int check_if_child_already_exists(struct __route_tree_s *children, size_t nb_child, char const *path, size_t const path_len)
+static int does_child_exist(struct __route_tree_s *children, size_t n_chldrn, char const *path, size_t const path_len)
 {
-    if (nb_child == 0) {
+    if (n_chldrn == 0) {
         log_warning("No children");
         return -1;
     }
-    for (size_t i = 0; i < nb_child; ++i) {
+    for (size_t i = 0; i < n_chldrn; ++i) {
         log_info("Checking child %.*s with path %.*s", (int)children[i].path_len, children[i].path, (int)path_len, path);
         if (strncmp(children[i].path, path, path_len) == 0) {
             return i;
@@ -21,7 +21,7 @@ static int check_if_child_already_exists(struct __route_tree_s *children, size_t
     return -1;
 }
 
-static struct __route_tree_s *router_check_default_child_for_handler(
+static struct __route_tree_s *router_default_child_handler(
     struct __route_tree_s *tree, char const *path, size_t const path_len,
     struct handler_env_s *env)
 {
@@ -66,40 +66,52 @@ int handler_env_init(struct handler_env_s *env)
     return 0;
 }
 
-handler_t router_get_handler(router_t *tree, char const *path, char const *method, struct handler_env_s *env)
+static handler_t finally_get_handler(struct __route_tree_s *root, char const *path, enum method_e method)
 {
-    struct __route_tree_s *root = (struct __route_tree_s *)tree;
+    int index = hash(path, strlen(path));
+    int subindex = does_child_exist(root->child[index], root->childs_count[index], path, strlen(path));
+
+    return (subindex == -1) ? NULL : root->child[index][subindex].handler[method];
+}
+
+static handler_t router_search(struct __route_tree_s *tree, char const *path, enum method_e method, struct handler_env_s *env)
+{
     char const *save_pointer;
     char *slash_addr;
     int index;
     int tree_path_len;
     int subindex;
 
-    log_info("Getting handler for method '%s' and path '%s'", method, path);
-    if (path[0] == '/' && path[1] == '\0') {
-        log_info("Found root handler");
-        return root->handler[get_method(method)];
-    }
     while (1) {
         save_pointer = path;
         slash_addr = strchr(path + 1, '/');
-        if (slash_addr == NULL) {
-            index = hash(path, strlen(path));
-            subindex = check_if_child_already_exists(root->child[index], root->childs_count[index], path, strlen(path));
-            return (subindex == -1) ? NULL : root->child[index][subindex].handler[get_method(method)];
-        }
+        if (slash_addr == NULL)
+            return finally_get_handler(tree, path, method);
         path = slash_addr;
         tree_path_len = ((intptr_t)save_pointer > (intptr_t)path) ? save_pointer - path : path - save_pointer;
         index = hash(save_pointer, tree_path_len);
-        subindex = check_if_child_already_exists(root->child[index], root->childs_count[index], save_pointer, tree_path_len);
-        if (subindex == -1) {
-            root = router_check_default_child_for_handler(root, save_pointer, tree_path_len, env);
-        } else {
-            root = &(root->child[index][subindex]);
-        }
-        if (root == NULL) {
+        subindex = does_child_exist(tree->child[index], tree->childs_count[index], save_pointer, tree_path_len);
+        tree = (subindex == -1) ? router_default_child_handler(tree, save_pointer, tree_path_len, env) : &(tree->child[index][subindex]);
+        if (tree == NULL)
             return NULL;
-        }
     }
-    return NULL;
+}
+
+handler_t router_get_handler(router_t *tree, char const *path, char const *method, struct handler_env_s *env)
+{
+    struct __route_tree_s *root = (struct __route_tree_s *)tree;
+    enum method_e method_e = get_method(method);
+
+    if (root == NULL) {
+        log_error("Invalid router, router NULL, can't get handler");
+        return NULL;
+    }
+    if (method_e == ERROR) {
+        log_error("Invalid method, can't get handler");
+        return NULL;
+    }
+    if (path[0] == '/' && path[1] == '\0')
+        return root->handler[method_e];
+    env->argc = 0;
+    return router_search(root, path, method_e, env);
 }

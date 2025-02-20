@@ -69,7 +69,7 @@ static route_t routes[] = {
 };
 
 static char *routes_names[] = {
-    a, b, c, d, e, "/api/efeadfezfrezf/coucou_les_amis/test"
+    a, b, c, d, e, "/api/efeadfezfrezf/coucou_les_amis/test", "/api/aze/coucou_les_amis/test",
 };
 
 #define NB_ROUTES (sizeof(routes) / sizeof(route_t))
@@ -85,7 +85,7 @@ int main() {
     handler_t h;
 
     handler_env_init(&env);
-    for (size_t i = 0; i < NB_ROUTES; ++i) {
+    for (size_t i = 0; i < NB_ROUTES + 1; ++i) {
         h = router_get_handler(router, routes_names[i], "GET", &env);
         if (h != NULL) {
             h(NULL);
