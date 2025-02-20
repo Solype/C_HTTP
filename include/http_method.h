@@ -26,5 +26,13 @@ struct method_pair_s {
  */
 enum method_e get_method(char const *method);
 
+/**
+ * @brief Get the name of a method
+ * 
+ * @param method The method to get the name from
+ * @return char const * const, the name of the method
+ */
+char const * const get_method_name(enum method_e method) {
+
 #endif /* !HTTP_METHOD_H_ */
 

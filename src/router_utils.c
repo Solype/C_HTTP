@@ -6,27 +6,6 @@
 #include <string.h>
 #include <stdint.h>
 
-char *get_method_name(enum method_e method) {
-    switch (method) {
-        case GET:
-            return "GET";
-        case POST:
-            return "POST";
-        case PUT:
-            return "PUT";
-        case DELETE:
-            return "DELETE";
-        case HEAD:
-            return "HEAD";
-        case OPTIONS:
-            return "OPTIONS";
-        case TRACE:
-            return "TRACE";
-        default:
-            return "UNKNOWN";
-    }
-}
-
 static void display_router(struct __route_tree_s *tree, size_t depth)
 {
 
