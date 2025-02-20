@@ -6,13 +6,14 @@
 #include <arpa/inet.h>
 #include "http_server.h"
 #include "router.h"
+#include "http_log.h"
 
 #define PORT 8080
 
 __attribute__((section(".data"))) static char a[] = "/";
 __attribute__((section(".data"))) static char b[] = "/api/1";
-__attribute__((section(".data"))) static char c[] = "/aa/ping";
-__attribute__((section(".data"))) static char d[] = "/bb/ping";
+__attribute__((section(".data"))) static char c[] = "/bb/ping";
+__attribute__((section(".data"))) static char d[] = "/bb/";
 __attribute__((section(".data"))) static char e[] = "/bb/aa/cc/dd";
 __attribute__((section(".data"))) static char f[] = "/api/*/coucou_les_amis/test";
 
@@ -67,6 +68,11 @@ static route_t routes[] = {
     {.handler = handler_f, .method = "GET", .path = f},
 };
 
+static char *routes_names[] = {
+    a, b, c, d, e, "/api/efeadfezfrezf/coucou_les_amis/test"
+};
+
+#define NB_ROUTES (sizeof(routes) / sizeof(route_t))
 
 int main() {
     // struct http_server_s server;
@@ -74,22 +80,24 @@ int main() {
     // http_server_enable_clean_quit(&server);
     // http_server_run(&server);
     // http_server_destroy(&server);
-    router_t router = router_init(routes, sizeof(routes) / sizeof(route_t));
-    handler_t h = router_get_handler(router, "GET", a); // Utilise le bon type
-    h(NULL);
-    h = router_get_handler(router, "GET", b);
-    h(NULL);
-    h = router_get_handler(router, "GET", c);
-    h(NULL);
-    h = router_get_handler(router, "GET", d);
-    h(NULL);
-    h = router_get_handler(router, "GET", e);
-    h(NULL);
-    // route_t new = {.handler = handler_f, .method = "GET", .path = f};
-    // router_add_route(router, &new);
-    h = router_get_handler(router, "GET", "/api/efeadfezfrezf/coucou_les_amis/test");
-    h(NULL);
+    router_t router = router_init(routes, NB_ROUTES);
+    struct handler_env_s env;
+    handler_t h;
+
+    handler_env_init(&env);
+    for (size_t i = 0; i < NB_ROUTES; ++i) {
+        h = router_get_handler(router, routes_names[i], "GET", &env);
+        if (h != NULL) {
+            h(NULL);
+            for (size_t j = 0; j < env.argc; ++j) {
+                log_info("Arg %ld: %.*s", j, env.argv_len[j], env.argv[j]);
+            }
+        } else {
+            log_error("Route '%s' not found", routes_names[i]);
+        }
+    }
     router_destroy(router);
+    handler_env_destroy(&env);
     // printf("%ld\n", sizeof(void *));
     return 0;
 }

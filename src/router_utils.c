@@ -6,11 +6,37 @@
 #include <string.h>
 #include <stdint.h>
 
+char *get_method_name(enum method_e method) {
+    switch (method) {
+        case GET:
+            return "GET";
+        case POST:
+            return "POST";
+        case PUT:
+            return "PUT";
+        case DELETE:
+            return "DELETE";
+        case HEAD:
+            return "HEAD";
+        case OPTIONS:
+            return "OPTIONS";
+        case TRACE:
+            return "TRACE";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 static void display_router(struct __route_tree_s *tree, size_t depth)
 {
 
     if (tree->path != NULL && tree->path_len > 0 && tree->path[0] != '\0') {
         log_info("%*s%.*s", depth * 2, "", (int)tree->path_len, tree->path);
+    }
+    for (size_t i = 0; i < NB_METHODS; ++i) {
+        if (tree->handler[i] != NULL) {
+            log_info("%*s%s", depth * 2, "", get_method_name(i));
+        }
     }
     for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
         for (size_t j = 0; j < tree->childs_count[i]; ++j) {
