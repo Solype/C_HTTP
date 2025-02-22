@@ -6,10 +6,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-set(EXECUTABLE_NAME server_http_https)
-
 set(SOURCES
-    main.c
     src/http_server_init.c
     src/http_server_run.c
     src/http_method.c
@@ -21,19 +18,40 @@ set(SOURCES
     src/router_utils.c
 )
 
-add_executable(${EXECUTABLE_NAME} ${SOURCES})
+# ==============================================
+# Trouver et inclure Python automatiquement
+# ==============================================
+find_package(Python3 REQUIRED COMPONENTS Development)
 
-find_package(OpenSSL REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+# ==============================================
+# Création de l'exécutable "server"
+# ==============================================
+add_executable(server src/exec/main.c ${SOURCES})
+target_include_directories(server PRIVATE include)
 
-target_include_directories(${EXECUTABLE_NAME} PRIVATE include)
-
-target_compile_definitions(${EXECUTABLE_NAME} PRIVATE ENABLE_HTTPS=1)
-
+# Ajout des options de compilation (sécurité + debug)
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(${EXECUTABLE_NAME} PRIVATE
-        -Wall -Wextra -Wpedantic -Werror -g3
-    )
+    target_compile_options(server PRIVATE -Wall -Wextra -Wpedantic -Werror -g3)
 endif()
 
 enable_testing()
+
+# ==============================================
+# Ajout d'une bibliothèque partagée pour Python
+# ==============================================
+set(PYTHON_LIB_SOURCES src/python/wrapper.c)
+
+add_library(pythonlib SHARED ${PYTHON_LIB_SOURCES})
+target_include_directories(pythonlib PRIVATE ${Python3_INCLUDE_DIRS})
+target_link_libraries(pythonlib PRIVATE ${Python3_LIBRARIES})
+
+set_target_properties(pythonlib PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+set_target_properties(pythonlib PROPERTIES
+    PREFIX ""
+    SUFFIX ".so"
+)
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(pythonlib PRIVATE -fPIC)
+    target_compile_options(pythonlib PRIVATE -Wall -Wextra -Wpedantic -Werror -g3)
+endif()
