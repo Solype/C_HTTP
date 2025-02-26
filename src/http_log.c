@@ -58,4 +58,3 @@ int log_info(const char *message, ...)
     va_end(args);
     return EXIT_SUCCESS;
 }
-

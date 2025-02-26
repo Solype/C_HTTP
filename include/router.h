@@ -60,7 +60,7 @@ void router_destroy(router_t *tree);
  * @param method The method of the request
  * @return The handler of the request
  */
-handler_t router_get_handler(router_t *tree, char const *path, char const *method, struct handler_env_s *env);
+handler_t router_get_handler(router_t *tree, char const *path, enum method_e method, struct handler_env_s *env);
 
 /**
  * @brief Add a route to a route tree

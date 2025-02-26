@@ -9,7 +9,7 @@
 static int does_child_exist(struct __route_tree_s *children, size_t n_chldrn, char const *path, size_t const path_len)
 {
     if (n_chldrn == 0) {
-        log_warning("No children");
+        log_error("No children");
         return -1;
     }
     for (size_t i = 0; i < n_chldrn; ++i) {
@@ -97,21 +97,20 @@ static handler_t router_search(struct __route_tree_s *tree, char const *path, en
     }
 }
 
-handler_t router_get_handler(router_t *tree, char const *path, char const *method, struct handler_env_s *env)
+handler_t router_get_handler(router_t *tree, char const *path, enum method_e method, struct handler_env_s *env)
 {
     struct __route_tree_s *root = (struct __route_tree_s *)tree;
-    enum method_e method_e = get_method(method);
 
     if (root == NULL) {
         log_error("Invalid router, router NULL, can't get handler");
         return NULL;
     }
-    if (method_e == ERROR) {
+    if (method == ERROR) {
         log_error("Invalid method, can't get handler");
         return NULL;
     }
     if (path[0] == '/' && path[1] == '\0')
-        return root->handler[method_e];
+        return root->handler[method];
     env->argc = 0;
-    return router_search(root, path, method_e, env);
+    return router_search(root, path, method, env);
 }

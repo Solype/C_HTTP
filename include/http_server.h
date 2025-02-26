@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include "router.h"
 
 #ifndef HTTP_SERVER_H_
     #define HTTP_SERVER_H_
@@ -31,8 +32,10 @@ int http_server_init(struct http_server_s *server, int port, int nb_clients);
  * @brief Run the HTTP server
  * 
  * @param server The server to run
+ * @param router The router to use
+ * @return int 0 on success, 1 on failure
  */
-int http_server_run(struct http_server_s *server);
+int http_server_run(struct http_server_s *server, router_t router);
 
 /**
  * @brief Enable clean quit for the HTTP server
