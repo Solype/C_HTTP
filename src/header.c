@@ -69,7 +69,7 @@ static int init_query(struct header_s *header)
     char *save_pointer;
 
     if (query == NULL) {
-        return log_info("No query on %s", header->uri);;
+        return log_info("No query parameter on url: %s", header->uri);;
     }
     *query = '\0';
     query++;

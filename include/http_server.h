@@ -23,10 +23,11 @@ struct http_server_s {
 /**
  * @brief Initialize an HTTP server
  * 
- * @param server The server to initialize
  * @param port The port to listen on
+ * @param nb_clients The maximum number of clients to accept
+ * @return struct http_server_s The initialized HTTP server
  */
-int http_server_init(struct http_server_s *server, int port, int nb_clients);
+struct http_server_s *http_server_create(int port, int nb_clients);
 
 /**
  * @brief Run the HTTP server

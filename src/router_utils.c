@@ -6,27 +6,27 @@
 #include <string.h>
 #include <stdint.h>
 
-static void display_router(struct __route_tree_s *tree, size_t depth)
-{
+// static void display_router(struct __route_tree_s *tree, size_t depth)
+// {
 
-    if (tree->path != NULL && tree->path_len > 0 && tree->path[0] != '\0') {
-        log_info("%*s%.*s", depth * 2, "", (int)tree->path_len, tree->path);
-    }
-    for (size_t i = 0; i < NB_METHODS; ++i) {
-        if (tree->handler[i] != NULL) {
-            log_info("%*s%s", depth * 2, "", get_method_name(i));
-        }
-    }
-    for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
-        for (size_t j = 0; j < tree->childs_count[i]; ++j) {
-            display_router(&(tree->child[i][j]), depth + 1);
-        }
-    }
-    if (tree->default_child != NULL) {
-        log_info("%*sdefault", depth * 2, "");
-        display_router(tree->default_child, depth + 1);
-    }
-}
+//     if (tree->path != NULL && tree->path_len > 0 && tree->path[0] != '\0') {
+//         log_info("%*s%.*s", depth * 2, "", (int)tree->path_len, tree->path);
+//     }
+//     for (size_t i = 0; i < NB_METHODS; ++i) {
+//         if (tree->handler[i] != NULL) {
+//             log_info("%*s%s", depth * 2, "", get_method_name(i));
+//         }
+//     }
+//     for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
+//         for (size_t j = 0; j < tree->childs_count[i]; ++j) {
+//             display_router(&(tree->child[i][j]), depth + 1);
+//         }
+//     }
+//     if (tree->default_child != NULL) {
+//         log_info("%*sdefault", depth * 2, "");
+//         display_router(tree->default_child, depth + 1);
+//     }
+// }
 
 static int test_route_method_validity(route_t *routes)
 {
@@ -79,7 +79,6 @@ router_t *router_init(route_t routes[], size_t nb_routes)
     if (root == NULL) {
         return NULL;
     }
-    log_info("Checking routes validity");
     nb_routes = remove_route_uninitializable(routes, nb_routes);
     set_empty_tree_node(root);
     root->path = "/";
@@ -91,7 +90,6 @@ router_t *router_init(route_t routes[], size_t nb_routes)
             router_add_route((void *)root, &(routes[i]));
         }
     }
-    display_router(root, 0);
     return (router_t *)root;
 }
 

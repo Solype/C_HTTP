@@ -9,11 +9,9 @@
 static int does_child_exist(struct __route_tree_s *children, size_t n_chldrn, char const *path, size_t const path_len)
 {
     if (n_chldrn == 0) {
-        log_error("No children");
         return -1;
     }
     for (size_t i = 0; i < n_chldrn; ++i) {
-        log_info("Checking child %.*s with path %.*s", (int)children[i].path_len, children[i].path, (int)path_len, path);
         if (strncmp(children[i].path, path, path_len) == 0) {
             return i;
         }
@@ -25,7 +23,6 @@ static struct __route_tree_s *router_default_child_handler(
     struct __route_tree_s *tree, char const *path, size_t const path_len,
     struct handler_env_s *env)
 {
-    log_info("Checking default child %.*s, inserting it in env", (int)path_len, path);
     if (env->env_len == env->argc) {
         env->argv = realloc(env->argv, sizeof(char *) * (env->env_len + 1));
         if (env->argv == NULL) {

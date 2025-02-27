@@ -5,8 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-
-int http_server_init(struct http_server_s *server, int port, int nb)
+static int http_server_init(struct http_server_s *server, int port, int nb)
 {
     int opt = 1;
 
@@ -15,8 +14,6 @@ int http_server_init(struct http_server_s *server, int port, int nb)
     if (server->socket < 0) {
         return log_error("Failed to create socket");
     }
-    log_info("Socket created");
-
     if (setsockopt(server->socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
         log_warning("Failed to set socket options");
     }
@@ -31,17 +28,30 @@ int http_server_init(struct http_server_s *server, int port, int nb)
         close(server->socket);
         return log_error("Failed to bind socket");;
     }
-    log_info("Socket binded");
     if (listen(server->socket, nb) < 0) {
         close(server->socket);
         return log_error("Failed to listen on socket");;
     }
-    return log_info("Server started at http://%s:%d", inet_ntoa(server->addr.sin_addr), port);
+    return log_success("Server started at http://%s:%d", inet_ntoa(server->addr.sin_addr), port);
+}
+
+struct http_server_s *http_server_create(int port, int nb)
+{
+    struct http_server_s *server = malloc(sizeof(struct http_server_s));
+    if (server == NULL) {
+        return NULL;
+    }
+    if (http_server_init(server, port, nb) != 0) {
+        free(server);
+        return NULL;
+    }
+    return server;
 }
 
 int http_server_destroy(struct http_server_s *server)
 {
     close(server->socket);
+    free(server);
     log_info("Server stopped");
     return 0;
 }
