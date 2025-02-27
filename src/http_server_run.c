@@ -11,7 +11,7 @@
 #include "router.h"
 
 
-static bool sig_received = true;
+static bool_t sig_received = true;
 
 static void handle_sig(int sig __attribute__((unused)))
 {

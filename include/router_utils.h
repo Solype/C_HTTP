@@ -5,7 +5,7 @@
 
 /**
  * @brief Hash a path
- * 
+ *
  * @param path The path to hash
  * @param size The size of the path
  * @return The hash of the path

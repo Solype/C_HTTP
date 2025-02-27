@@ -35,7 +35,6 @@ static struct __route_tree_s *router_default_child_handler(
             return NULL;
         }
         env->env_len++;
-        
     }
     env->argv[env->argc] = (char *)path + 1;
     env->argv_len[env->argc] = path_len - 1;

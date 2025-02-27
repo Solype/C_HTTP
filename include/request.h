@@ -15,7 +15,7 @@ struct request_s {
 
 /**
  * @brief Initialize the request structure
- * 
+ *
  * @param request The request structure to initialize
  * @param raw_request The raw request to parse
  */
@@ -23,7 +23,7 @@ int request_init(struct request_s *request, int client_socket);
 
 /**
  * @brief Destroy the request structure
- * 
+ *
  * @param request The request structure to destroy
  * @return 0 on success, -1 on failure
  */

@@ -11,7 +11,7 @@ enum method_e {
     TRACE = 6,
     NB_METHODS = 7,
     ERROR = -1
-} ;
+};
 
 struct method_pair_s {
     char *literal;
@@ -20,7 +20,7 @@ struct method_pair_s {
 
 /**
  * @brief Get the method enum from a string
- * 
+ *
  * @param method The string to get the method from
  * @return method_e, see method_e enum
  */
@@ -28,11 +28,10 @@ enum method_e get_method(char const *method);
 
 /**
  * @brief Get the name of a method
- * 
+ *
  * @param method The method to get the name from
  * @return char const * const, the name of the method
  */
 char const *get_method_name(enum method_e method);
 
 #endif /* !HTTP_METHOD_H_ */
-
