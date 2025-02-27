@@ -34,9 +34,7 @@ static void handle_client(int client_socket, router_t router, struct handler_env
     if (request_init(&request, client_socket) != EXIT_SUCCESS) {
         return;
     }
-
     handler = router_get_handler(router, request.headers.uri, request.headers.method, env);
-
     if (handler != NULL) {
         if (handler(&request) != EXIT_SUCCESS) {
             log_error("Failed to handle request");

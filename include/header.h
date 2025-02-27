@@ -9,14 +9,17 @@ struct string_pair {
     char *value;
 };
 
+/**
+ * @brief The header structure
+ */
 struct header_s {
-    enum method_e method;
-    char *uri;
-    char *version;
-    struct string_pair *pairs;
-    struct string_pair *query_params;
-    int header_count;
-    int query_param_count;
+    enum method_e method;               // the method of the request
+    char *uri;                          // the uri of the request
+    char *version;                      // the version of the request
+    struct string_pair *pairs;          // the pairs of the request, all the header values
+    struct string_pair *query_params;   // the query parameters of the request, after the "?"
+    int header_count;                   // the number of header pairs
+    int query_param_count;              // the number of query parameters
 };
 
 
