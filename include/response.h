@@ -2,7 +2,7 @@
     #define RESPONSE_H_
 
 enum constent_type_e {
-    application_octet_stream = 0,
+    no_body = 0,
     text_plain  = 1,
     text_html   = 2,
     text_css    = 3,
@@ -47,7 +47,8 @@ enum constent_type_e {
     application_pdf     = 42,
     application_msword  = 43,
     application_msexcel = 44,
-    NB_CONTENT_TYPE     = 45
+    application_octet_stream = 45,
+    NB_CONTENT_TYPE     = 46
 };
 
 struct response_s {
@@ -55,6 +56,7 @@ struct response_s {
     char *status_message;
     size_t status_code;
     enum constent_type_e content_type;
+    bool_t auto_free;
 };
 
 

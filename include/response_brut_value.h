@@ -73,7 +73,7 @@ static const char *status_codes_messages[] = {
     #define NB_STATUS_CODES (sizeof(status_codes_messages) / sizeof(const char *))
 
 static const char *content_types_str[] = {
-    "application/octet-stream",
+    "no_body",
     "text/plain",
     "text/html",
     "text/css",
@@ -119,7 +119,8 @@ static const char *content_types_str[] = {
     "application/pdf",
     "application/msword",
     "application/msexcel",
-    "application/msword"
+    "application/msword",
+    "application/octet-stream"
 };
 
 #endif /* !RESPONSE_BRUT_VALUE_H_ */

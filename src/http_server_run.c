@@ -28,21 +28,28 @@ static void handle_response(int client_socket, struct response_s *response)
                                  "Content-Type: %s\r\n"
                                  "Content-Length: %u\r\n"
                                  "Connection: close\r\n\r\n%s";
+    static const char *message_no_body = "HTTP/1.1 %.3d %s\r\n"
+                                         "Connection: close\r\n\r\n";
     const char *status_message = (response->status_message == NULL &&
         response->status_code < NB_STATUS_CODES) ? "OK" : response->status_message;
+    size_t body_len = response->body != NULL ? strlen(response->body) : 0;
 
-    if (response->body == NULL) {
-        response->body = "";
-    }
     if (response->content_type > NB_CONTENT_TYPE) {
-        response->content_type = application_octet_stream;
+        response->content_type = no_body;
     }
-    dprintf(client_socket, message,
-        response->status_code,
-        status_message,
-        content_types_str[response->content_type],
-        strlen(response->body),
-        response->body);
+    if (response->body == NULL || response->content_type == no_body || body_len == 0) {
+        dprintf(client_socket, message_no_body, response->status_code, status_message);
+    } else {
+        dprintf(client_socket, message,
+            response->status_code,
+            status_message,
+            content_types_str[response->content_type],
+            body_len,
+            response->body);
+    }
+    if (body_len >= 1024 && response->auto_free) {
+        free(response->body);
+    }
 }
 
 static void handle_client(int client_socket, router_t router, struct handler_env_s *env)
@@ -50,9 +57,11 @@ static void handle_client(int client_socket, router_t router, struct handler_env
     struct request_s request;
     handler_t handler;
     struct response_s response;
+    char buffer[1024] = {0};
 
-    response.body = NULL;
-    response.content_type = 0;
+    response.body = buffer;
+    response.auto_free = true;
+    response.content_type = no_body;
     response.status_code = 200;
     response.status_message = NULL;
     if (request_init(&request, client_socket) != EXIT_SUCCESS) {
@@ -62,6 +71,7 @@ static void handle_client(int client_socket, router_t router, struct handler_env
     if (handler != NULL) {
         if (handler(&request, env, &response) != EXIT_SUCCESS) {
             log_error("Failed to handle request");
+            response.status_code = 404;
         } else {
             log_success("Request handled");
         }
