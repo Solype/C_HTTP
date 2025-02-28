@@ -1,5 +1,9 @@
+
+
 #ifndef RESPONSE_H_
     #define RESPONSE_H_
+
+
 
 enum constent_type_e {
     no_body = 0,
@@ -56,7 +60,7 @@ struct response_s {
     char *status_message;
     size_t status_code;
     enum constent_type_e content_type;
-    bool_t auto_free;
+    int auto_free;
 };
 
 

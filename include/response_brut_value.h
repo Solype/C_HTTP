@@ -1,6 +1,16 @@
 #ifndef RESPONSE_BRUT_VALUE_H_
     #define RESPONSE_BRUT_VALUE_H_
 
+static const char *basic_response_message =
+    "HTTP/1.1 %.3d %s\r\n"
+    "Content-Type: %s\r\n"
+    "Content-Length: %u\r\n"
+    "Connection: close\r\n\r\n%s";
+
+static const char *basic_response_message_no_body =
+    "HTTP/1.1 %.3d %s\r\n"
+    "Connection: close\r\n\r\n";
+
 static const char *status_codes_messages[] = {
     [100] = "Continue",
     [101] = "Switching Protocols",

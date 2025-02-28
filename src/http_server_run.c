@@ -24,12 +24,6 @@ static void handle_sig(int sig __attribute__((unused)))
 
 static void handle_response(int client_socket, struct response_s *response)
 {
-    static const char *message = "HTTP/1.1 %.3d %s\r\n"
-                                 "Content-Type: %s\r\n"
-                                 "Content-Length: %u\r\n"
-                                 "Connection: close\r\n\r\n%s";
-    static const char *message_no_body = "HTTP/1.1 %.3d %s\r\n"
-                                         "Connection: close\r\n\r\n";
     const char *status_message = (response->status_message == NULL &&
         response->status_code < NB_STATUS_CODES) ? "OK" : response->status_message;
     size_t body_len = response->body != NULL ? strlen(response->body) : 0;
@@ -38,9 +32,9 @@ static void handle_response(int client_socket, struct response_s *response)
         response->content_type = no_body;
     }
     if (response->body == NULL || response->content_type == no_body || body_len == 0) {
-        dprintf(client_socket, message_no_body, response->status_code, status_message);
+        dprintf(client_socket, basic_response_message_no_body, response->status_code, status_message);
     } else {
-        dprintf(client_socket, message,
+        dprintf(client_socket, basic_response_message,
             response->status_code,
             status_message,
             content_types_str[response->content_type],
@@ -50,6 +44,28 @@ static void handle_response(int client_socket, struct response_s *response)
     if (body_len >= 1024 && response->auto_free) {
         free(response->body);
     }
+}
+
+static void format_automatic_404(struct response_s *response)
+{
+    static char const body[] = "<html><body><h1>404 Not Found</h1></body></html>";
+
+    response->status_code = 404;
+    response->status_message = "Not Found";
+    memcpy(response->body, body, sizeof(body));
+    response->content_type = text_html;
+    response->auto_free = true;
+}
+
+static void format_automatic_500(struct response_s *response)
+{
+    static char const body[] = "<html><body><h1>500 Internal Server Error</h1></body></html>";
+
+    response->status_code = 500;
+    response->status_message = "Internal Server Error";
+    memcpy(response->body, body, sizeof(body));
+    response->content_type = text_html;
+    response->auto_free = true;
 }
 
 static void handle_client(int client_socket, router_t router, struct handler_env_s *env)
@@ -71,10 +87,12 @@ static void handle_client(int client_socket, router_t router, struct handler_env
     if (handler != NULL) {
         if (handler(&request, env, &response) != EXIT_SUCCESS) {
             log_error("Failed to handle request");
-            response.status_code = 404;
+            format_automatic_500(&response);
         } else {
             log_success("Request handled");
         }
+    } else {
+        format_automatic_404(&response);
     }
     request_destroy(&request);
     handle_response(client_socket, &response);
