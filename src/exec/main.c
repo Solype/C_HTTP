@@ -21,7 +21,9 @@ static int handler_a(struct request_s *request, struct handler_env_s *env, struc
 {
     (void)request;
     (void)env;
-    response->body = "Hello world";
+    response->body = "{\"a\": \"a\"}";
+    response->content_type = application_json;
+    response->status_code = 403;
     printf("ROUTE 'a'\n");
     return 0;
 }

@@ -73,6 +73,7 @@ static const char *status_codes_messages[] = {
     #define NB_STATUS_CODES (sizeof(status_codes_messages) / sizeof(const char *))
 
 static const char *content_types_str[] = {
+    "application/octet-stream",
     "text/plain",
     "text/html",
     "text/css",
