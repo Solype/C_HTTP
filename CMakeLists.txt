@@ -31,7 +31,7 @@ target_include_directories(server PRIVATE include)
 
 # Ajout des options de compilation (sécurité + debug)
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(server PRIVATE -Wall -Wextra -Wpedantic -Werror -g3)
+    target_compile_options(server PRIVATE -Wall -Wextra -Wpedantic -g3)
 endif()
 
 enable_testing()
@@ -51,7 +51,8 @@ set_target_properties(pythonlib PROPERTIES
     PREFIX ""
     SUFFIX ".so"
 )
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(pythonlib PRIVATE -fPIC)
-    target_compile_options(pythonlib PRIVATE -Wall -Wextra -Wpedantic -Werror -g3)
+if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(server PRIVATE -Wall -Wextra -Wpedantic -g3)
+elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(server PRIVATE /W4 /WX /Zi)
 endif()

@@ -1,21 +1,21 @@
 #include "request.h"
 #include "http_method.h"
+#include "response.h"
 
 #ifndef ROUTE_TREE_H_
     #define ROUTE_TREE_H_
 
     #define HTTP_ROUTE_CHILD_COUNT 40
 
-typedef int (*handler_t)(struct request_s *request);
 
-
-struct handler_env_s {
+    struct handler_env_s {
     char **argv;
     size_t *argv_len;
     size_t argc;
     size_t env_len;
 };
 
+typedef int (*handler_t)(struct request_s *request, struct handler_env_s *env, struct response_s *response);
 
 struct __route_tree_s {
     char *path;

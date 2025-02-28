@@ -17,44 +17,56 @@ __attribute__((section(".data"))) static char d[] = "/bb/";
 __attribute__((section(".data"))) static char e[] = "/bb/aa/cc/dd";
 __attribute__((section(".data"))) static char f[] = "/api/*/coucou_les_amis/test";
 
-static int handler_a(struct request_s *request)
+static int handler_a(struct request_s *request, struct handler_env_s *env, struct response_s *response)
 {
     (void)request;
+    (void)env;
+    response->body = "Hello world";
     printf("ROUTE 'a'\n");
     return 0;
 }
 
-static int handler_b(struct request_s *request)
+static int handler_b(struct request_s *request, struct handler_env_s *env, struct response_s *response)
 {
     (void)request;
+    (void)response;
+    (void)env;
     printf("ROUTE 'b'\n");
     return 0;
 }
 
-static int handler_c(struct request_s *request)
+static int handler_c(struct request_s *request, struct handler_env_s *env, struct response_s *response)
 {
     (void)request;
+    (void)response;
+    (void)env;
     printf("ROUTE 'c'\n");
     return 0;
 }
 
-static int handler_d(struct request_s *request)
+static int handler_d(struct request_s *request, struct handler_env_s *env, struct response_s *response)
 {
     (void)request;
+    (void)response;
+    (void)env;
     printf("ROUTE 'd'\n");
     return 0;
 }
 
-static int handler_e(struct request_s *request)
+static int handler_e(struct request_s *request, struct handler_env_s *env, struct response_s *response)
 {
     (void)request;
+    (void)response;
+    (void)env;
     printf("ROUTE 'e'\n");
     return 0;
 }
 
-static int handler_f(struct request_s *request)
+static int handler_f(struct request_s *request, struct handler_env_s *env, struct response_s *response)
 {
     (void)request;
+    (void)response;
+    (void)env;
     printf("ROUTE 'f'\n");
     return 0;
 }
@@ -67,10 +79,6 @@ static route_t routes[] = {
     {.handler = handler_e, .method = "GET", .path = e},
     {.handler = handler_f, .method = "GET", .path = f},
 };
-
-// static char *routes_names[] = {
-//     a, b, c, d, e, "/api/efeadfezfrezf/coucou_les_amis/test", "/api/aze/coucou_les_amis/test",
-// };
 
 #define NB_ROUTES (sizeof(routes) / sizeof(route_t))
 
