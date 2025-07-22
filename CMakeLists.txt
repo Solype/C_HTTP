@@ -13,9 +13,9 @@ set(SOURCES
     src/request.c
     src/header.c
     src/http_log.c
-    src/router.c
-    src/router_get_handler.c
-    src/router_utils.c
+    src/router/router.c
+    src/router/router_get_handler.c
+    src/router/router_utils.c
 )
 
 # ==============================================
