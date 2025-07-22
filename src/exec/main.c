@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include "http_server.h"
-#include "router.h"
+#include "router/router.h"
 #include "http_log.h"
 
 #define PORT 8080
@@ -87,10 +87,11 @@ static route_t routes[] = {
 
 int main() {
     router_t router = router_init(routes, NB_ROUTES);
-    struct http_server_s *server = http_server_create(PORT, 5);
-    http_server_enable_clean_quit(server);
-    http_server_run(server, router);
-    http_server_destroy(server);
+
+    // struct http_server_s *server = http_server_create(PORT, 5);
+    // http_server_enable_clean_quit(server);
+    // http_server_run(server, router);
+    // http_server_destroy(server);
     router_destroy(router);
     return 0;
 }

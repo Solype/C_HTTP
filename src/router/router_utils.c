@@ -1,6 +1,6 @@
 #include "http_log.h"
-#include "router.h"
-#include "router_utils.h"
+#include "router/router.h"
+#include "router/router_utils.h"
 #include "http_method.h"
 #include <stdlib.h>
 #include <string.h>
@@ -27,6 +27,13 @@
 //         display_router(tree->default_child, depth + 1);
 //     }
 // }
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+///     PRIVATE
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
 
 static int test_route_method_validity(route_t *routes)
 {
@@ -72,6 +79,12 @@ static size_t remove_route_uninitializable(route_t routes[], size_t nb_routes)
     return nb_routes;
 }
 
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+///     PUBLIC
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
 router_t *router_init(route_t routes[], size_t nb_routes)
 {
     struct __route_tree_s *root = malloc(sizeof(struct __route_tree_s));
@@ -93,6 +106,22 @@ router_t *router_init(route_t routes[], size_t nb_routes)
     return (router_t *)root;
 }
 
+void router_destroy(router_t *tree)
+{
+    struct __route_tree_s *root = (struct __route_tree_s *)tree;
+
+    if (root == NULL) {
+        return;
+    }
+    for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
+        for (size_t j = 0; j < root->childs_count[i]; ++j) {
+            router_destroy((router_t)(&(root->child[i][j])));
+        }
+    }
+    router_destroy((router_t)((root->default_child)));
+    free(root);
+}
+
 int hash(char const *path, int size)
 {
     int hash = 0;
@@ -111,20 +140,4 @@ void set_empty_tree_node(struct __route_tree_s *tree)
     memset(tree->child, 0, sizeof(tree->child));
     memset(tree->childs_count, 0, sizeof(tree->childs_count));
     tree->path = NULL;
-}
-
-void router_destroy(router_t *tree)
-{
-    struct __route_tree_s *root = (struct __route_tree_s *)tree;
-
-    if (root == NULL) {
-        return;
-    }
-    for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
-        for (size_t j = 0; j < root->childs_count[i]; ++j) {
-            router_destroy((router_t)(&(root->child[i][j])));
-        }
-    }
-    router_destroy((router_t)((root->default_child)));
-    free(root);
 }

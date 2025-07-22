@@ -1,6 +1,6 @@
 #include "http_log.h"
-#include "router.h"
-#include "router_utils.h"
+#include "router/router.h"
+#include "router/router_utils.h"
 #include "http_method.h"
 #include <stdlib.h>
 #include <string.h>
