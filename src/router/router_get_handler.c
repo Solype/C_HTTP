@@ -6,6 +6,13 @@
 #include <string.h>
 #include <stdint.h>
 
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+///     PRIVATE
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+
 static int does_child_exist(struct __route_tree_s *children, size_t n_chldrn, char const *path, size_t const path_len)
 {
     if (n_chldrn == 0) {
@@ -42,26 +49,6 @@ static struct __route_tree_s *router_default_child_handler(
     return tree->default_child;
 }
 
-int handler_env_destroy(struct handler_env_s *env)
-{
-    free(env->argv);
-    free(env->argv_len);
-    env->argv = NULL;
-    env->argv_len = NULL;
-    env->argc = 0;
-    env->env_len = 0;
-    return 0;
-}
-
-int handler_env_init(struct handler_env_s *env)
-{
-    env->argv = NULL;
-    env->argv_len = NULL;
-    env->argc = 0;
-    env->env_len = 0;
-    return 0;
-}
-
 static handler_t finally_get_handler(struct __route_tree_s *root, char const *path, enum method_e method)
 {
     int index = hash(path, strlen(path));
@@ -91,6 +78,32 @@ static handler_t router_search(struct __route_tree_s *tree, char const *path, en
         if (tree == NULL)
             return NULL;
     }
+}
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+///     PUBLIC
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+int handler_env_destroy(struct handler_env_s *env)
+{
+    free(env->argv);
+    free(env->argv_len);
+    env->argv = NULL;
+    env->argv_len = NULL;
+    env->argc = 0;
+    env->env_len = 0;
+    return 0;
+}
+
+int handler_env_init(struct handler_env_s *env)
+{
+    env->argv = NULL;
+    env->argv_len = NULL;
+    env->argc = 0;
+    env->env_len = 0;
+    return 0;
 }
 
 handler_t router_get_handler(router_t *tree, char const *path, enum method_e method, struct handler_env_s *env)

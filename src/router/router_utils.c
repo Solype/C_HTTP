@@ -63,11 +63,12 @@ static size_t remove_route_uninitializable(route_t routes[], size_t nb_routes)
     for (size_t i = 0; i < nb_routes; ++i) {
         error = 0;
         if (routes[i].path == NULL || routes[i].path[0] != '/' || strchr(routes[i].path, ' ') != NULL)
-            error = log_error("Route has invalid path and will be ignored");
+            error = log_error("A route has invalid path and will be ignored, "
+                    "please make sure your root start with / and does not have any space");
         if (routes[i].handler == NULL)
-            error = log_error("Route has no handler and will be ignored");
+            error = log_error("A route has no handler and will be ignored");
         if (routes[i].method == NULL || test_route_method_validity(&routes[i]) != EXIT_SUCCESS)
-            error = log_error("Route has no method or invalid method and will be ignored");
+            error = log_error("A route has no method or invalid method and will be ignored");
         if (error == 1) {
             routes[i] = routes[nb_routes - 1];
             --i;
