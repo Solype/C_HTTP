@@ -13,20 +13,20 @@
 //////////////////////////////////////////////////////////////////////
 
 
-static int does_child_exist(struct __route_tree_s *children, size_t n_chldrn, char const *path, size_t const path_len)
+static int does_children_exist(struct __route_tree_s *childrenren, size_t n_chldrn, char const *path, size_t const path_len)
 {
     if (n_chldrn == 0) {
         return -1;
     }
     for (size_t i = 0; i < n_chldrn; ++i) {
-        if (strncmp(children[i].path, path, path_len) == 0) {
+        if (strncmp(childrenren[i].path, path, path_len) == 0) {
             return i;
         }
     }
     return -1;
 }
 
-static struct __route_tree_s *router_default_child_handler(
+static struct __route_tree_s *router_default_children_handler(
     struct __route_tree_s *tree, char const *path, size_t const path_len,
     struct handler_env_s *env)
 {
@@ -46,15 +46,15 @@ static struct __route_tree_s *router_default_child_handler(
     env->argv[env->argc] = (char *)path + 1;
     env->argv_len[env->argc] = path_len - 1;
     env->argc++;
-    return tree->default_child;
+    return tree->default_children;
 }
 
 static handler_t finally_get_handler(struct __route_tree_s *root, char const *path, enum method_e method)
 {
     int index = hash(path, strlen(path));
-    int subindex = does_child_exist(root->child[index], root->childs_count[index], path, strlen(path));
+    int subindex = does_children_exist(root->children[index], root->children_len[index], path, strlen(path));
 
-    return (subindex == -1) ? NULL : root->child[index][subindex].handler[method];
+    return (subindex == -1) ? NULL : root->children[index][subindex].handler[method];
 }
 
 static handler_t router_search(struct __route_tree_s *tree, char const *path, enum method_e method, struct handler_env_s *env)
@@ -73,8 +73,8 @@ static handler_t router_search(struct __route_tree_s *tree, char const *path, en
         path = slash_addr;
         tree_path_len = ((intptr_t)save_pointer > (intptr_t)path) ? save_pointer - path : path - save_pointer;
         index = hash(save_pointer, tree_path_len);
-        subindex = does_child_exist(tree->child[index], tree->childs_count[index], save_pointer, tree_path_len);
-        tree = (subindex == -1) ? router_default_child_handler(tree, save_pointer, tree_path_len, env) : &(tree->child[index][subindex]);
+        subindex = does_children_exist(tree->children[index], tree->children_len[index], save_pointer, tree_path_len);
+        tree = (subindex == -1) ? router_default_children_handler(tree, save_pointer, tree_path_len, env) : &(tree->children[index][subindex]);
         if (tree == NULL)
             return NULL;
     }

@@ -18,13 +18,13 @@
 //         }
 //     }
 //     for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
-//         for (size_t j = 0; j < tree->childs_count[i]; ++j) {
-//             display_router(&(tree->child[i][j]), depth + 1);
+//         for (size_t j = 0; j < tree->children_len[i]; ++j) {
+//             display_router(&(tree->children[i][j]), depth + 1);
 //         }
 //     }
-//     if (tree->default_child != NULL) {
+//     if (tree->default_children != NULL) {
 //         log_info("%*sdefault", depth * 2, "");
-//         display_router(tree->default_child, depth + 1);
+//         display_router(tree->default_children, depth + 1);
 //     }
 // }
 
@@ -86,7 +86,7 @@ static size_t remove_route_uninitializable(route_t routes[], size_t nb_routes)
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-router_t *router_init(route_t routes[], size_t nb_routes)
+router_t *router_init(route_t *routes, size_t nb_routes)
 {
     struct __route_tree_s *root = malloc(sizeof(struct __route_tree_s));
 
@@ -115,11 +115,11 @@ void router_destroy(router_t *tree)
         return;
     }
     for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
-        for (size_t j = 0; j < root->childs_count[i]; ++j) {
-            router_destroy((router_t)(&(root->child[i][j])));
+        for (size_t j = 0; j < root->children_len[i]; ++j) {
+            router_destroy((router_t)(&(root->children[i][j])));
         }
     }
-    router_destroy((router_t)((root->default_child)));
+    router_destroy((router_t)((root->default_children)));
     free(root);
 }
 
@@ -136,9 +136,9 @@ int hash(char const *path, int size)
 
 void set_empty_tree_node(struct __route_tree_s *tree)
 {
-    tree->default_child = NULL;
+    tree->default_children = NULL;
     memset(tree->handler, 0, sizeof(tree->handler));
-    memset(tree->child, 0, sizeof(tree->child));
-    memset(tree->childs_count, 0, sizeof(tree->childs_count));
+    memset(tree->children, 0, sizeof(tree->children));
+    memset(tree->children_len, 0, sizeof(tree->children_len));
     tree->path = NULL;
 }
