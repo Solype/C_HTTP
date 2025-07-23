@@ -8,7 +8,7 @@
 #include <sys/select.h>
 
 #include "http_server.h"
-#include "http_log.h"
+#include "utils/http_log.h"
 #include "request.h"
 #include "router/router.h"
 #include "response_brut_value.h"

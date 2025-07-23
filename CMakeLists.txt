@@ -9,10 +9,10 @@ set(CMAKE_C_EXTENSIONS OFF)
 set(SOURCES
     src/http_server_init.c
     src/http_server_run.c
-    src/http_method.c
     src/request.c
     src/header.c
-    src/http_log.c
+    src/utils/http_method.c
+    src/utils/http_log.c
     src/router/router.c
     src/router/router_get_handler.c
     src/router/router_utils.c
