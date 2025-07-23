@@ -81,6 +81,7 @@ static void handle_client(int client_socket, router_t router, struct handler_env
     response.status_code = 200;
     response.status_message = NULL;
     if (request_init(&request, client_socket) != EXIT_SUCCESS) {
+        close(client_socket);
         return;
     }
     handler = router_get_handler(router, request.headers.uri, request.headers.method, env);
