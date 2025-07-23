@@ -115,6 +115,14 @@ int header_init(struct header_s *header, char *raw_request, char **body)
 
 int header_destroy(struct header_s *header)
 {
-    free(header->pairs);
+    if (header->pairs != NULL) {
+        free(header->pairs);
+        header->pairs = NULL;
+    }
+
+    if (header->query_params != NULL) {
+        free(header->query_params);
+        header->query_params = NULL;
+    }
     return 0;
 }
