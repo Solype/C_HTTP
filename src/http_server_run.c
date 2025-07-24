@@ -110,7 +110,7 @@ static int init_select(fd_set *readfds, int socket)
 
 static int get_client(int socket, fd_set *readfds)
 {
-    static struct timeval timeout = {.tv_sec = 2, .tv_usec = 0};
+    struct timeval timeout = {.tv_sec = 2, .tv_usec = 0};
     int ret = select(socket + 1, readfds, NULL, NULL, &timeout);
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);

@@ -41,4 +41,22 @@ int header_init(struct header_s *header, char *raw_request, char **body);
  */
 int header_destroy(struct header_s *header);
 
+/**
+ * @brief Retrieve the value in the header of the key given
+ * 
+ * @param header The header structure to retrieve from the information
+ * @param key the key of the wanted value
+ * @return NULL in case of absence of the element, the pointer to the string in case of success
+ */
+char const *header_get(struct header_s const *header, char const *key);
+
+/**
+ * @brief Retrieve the value in the URI query parameters of the key given
+ * 
+ * @param header The header structure to retrieve from the information
+ * @param key the key of the wanted value
+ * @return NULL in case of absence of the element, the pointer to the string in case of success
+ */
+char const *header_query_get(struct header_s const *header, char const *key);
+
 #endif /* !HEADER_H_ */

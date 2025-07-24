@@ -44,6 +44,7 @@ static int init_pairs(struct header_s *header, char *raw_request, char **body)
         if (header->pairs[i].value == NULL) {
             return log_error("Invalid value header");
         }
+        header->pairs[i].value += 1;
         raw_request = save_pointer;
     }
     *body = raw_request;
@@ -96,10 +97,31 @@ static int init_query(struct header_s *header)
     return EXIT_SUCCESS;
 }
 
+char const *header_get(struct header_s const *header, char const *key)
+{
+    for (int i = 0; i < header->header_count; ++i) {
+        if (strcmp(header->pairs[i].key, key) == 0) {
+            return header->pairs[i].value;
+        }
+    }
+    return NULL;
+}
+
+char const *header_query_get(struct header_s const *header, char const *key)
+{
+    for (int i = 0; i < header->query_param_count; ++i) {
+        if (strcmp(header->query_params[i].key, key) == 0) {
+            return header->query_params[i].value;
+        }
+    }
+    return NULL;
+}
+
 int header_init(struct header_s *header, char *raw_request, char **body)
 {
     char *method;
 
+    memset(header, 0, sizeof(struct header_s));
     if (init_pairs(header, raw_request, body) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
