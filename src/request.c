@@ -54,7 +54,8 @@ static int read_body(struct request_s *request, int client_fd,
     size_t header_size = body_start - request->raw_request;
     size_t already_read = total_read - header_size;
     size_t total_to_read;
-    
+    ssize_t r;
+
     request->body = NULL;
     if (content_len_str == NULL) {
         return 0;
@@ -64,15 +65,11 @@ static int read_body(struct request_s *request, int client_fd,
         return 0;
     }
     total_to_read = content_len - already_read;
-    request->body = malloc(content_len + 1); // +1 for null terminator if needed (safe for text)
+    request->body = malloc(content_len + 1);
     if (!request->body) {
         return log_error("malloc failed");
     }
-
-    if (already_read > content_len) {
-        already_read = content_len; // prevent over-read
-    }
-    // Copy already received part of body
+    already_read = already_read > content_len ? content_len : already_read;
     memcpy(request->body, body_start, already_read);
     request->body[already_read] = '\0';
     if (total_to_read == 0) {
@@ -80,11 +77,9 @@ static int read_body(struct request_s *request, int client_fd,
         return 0;
     }
     memset(request->body + already_read, 0, total_to_read);
-    // Read remaining part if needed
-    ssize_t r = read(client_fd, request->body + already_read, total_to_read);
+    r = read(client_fd, request->body + already_read, total_to_read);
     request->body[content_len] = '\0';
-
-    return 0;
+    return r;
 }
 
 int request_init(struct request_s *request, int client_socket)
@@ -106,9 +101,6 @@ int request_init(struct request_s *request, int client_socket)
     log_info("request : %s", request->raw_request);
     header_init(&request->headers, request->raw_request, &end_of_header);
     read_body(request, client_socket, end_of_header, total_read);
-    if (request->body != NULL) {
-        log_info("body : %s", request->body);
-    }
     return 0;
 }
 
