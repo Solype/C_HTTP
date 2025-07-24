@@ -55,12 +55,14 @@ enum constent_type_e {
     NB_CONTENT_TYPE     = 46
 };
 
+typedef void (*deleter_t)(void *);
+
 struct response_s {
     char *body;
     char *status_message;
     size_t status_code;
     enum constent_type_e content_type;
-    int auto_free;
+    deleter_t call_back;
 };
 
 

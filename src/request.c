@@ -98,7 +98,6 @@ int request_init(struct request_s *request, int client_socket)
         return log_error("Failed to read from client");
     }
     log_info("Allocated %d bytes", total_read);
-    log_info("request : %s", request->raw_request);
     header_init(&request->headers, request->raw_request, &end_of_header);
     read_body(request, client_socket, end_of_header, total_read);
     return 0;

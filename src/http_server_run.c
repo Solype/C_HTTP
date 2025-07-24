@@ -41,8 +41,8 @@ static void handle_response(int client_socket, struct response_s *response)
             body_len,
             response->body);
     }
-    if (body_len >= 1024 && response->auto_free) {
-        free(response->body);
+    if (body_len >= 1024 && response->call_back != NULL) {
+        response->call_back(response->body);
     }
 }
 
@@ -54,7 +54,7 @@ static void format_automatic_404(struct response_s *response)
     response->status_message = "Not Found";
     memcpy(response->body, body, sizeof(body));
     response->content_type = text_html;
-    response->auto_free = true;
+    response->call_back = NULL;
 }
 
 static void format_automatic_500(struct response_s *response)
@@ -65,7 +65,7 @@ static void format_automatic_500(struct response_s *response)
     response->status_message = "Internal Server Error";
     memcpy(response->body, body, sizeof(body));
     response->content_type = text_html;
-    response->auto_free = true;
+    response->call_back = NULL;
 }
 
 static void handle_client(int client_socket, router_t router, struct handler_env_s *env)
@@ -76,7 +76,7 @@ static void handle_client(int client_socket, router_t router, struct handler_env
     char buffer[1024] = {0};
 
     response.body = buffer;
-    response.auto_free = true;
+    response.call_back = NULL;
     response.content_type = no_body;
     response.status_code = 200;
     response.status_message = NULL;

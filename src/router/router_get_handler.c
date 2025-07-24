@@ -30,6 +30,8 @@ static struct __route_tree_s *router_default_children_handler(
     struct __route_tree_s *tree, char const *path, size_t const path_len,
     struct handler_env_s *env)
 {
+    log_info("path : %d %s", path_len, path);
+
     if (env->env_len == env->argc) {
         env->argv = realloc(env->argv, sizeof(char *) * (env->env_len + 1));
         if (env->argv == NULL) {

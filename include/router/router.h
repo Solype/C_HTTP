@@ -9,10 +9,10 @@
 
 
 struct handler_env_s {
-    char **argv;
-    size_t *argv_len;
-    size_t argc;
-    size_t env_len;
+    char **argv;        // list of arguments
+    size_t *argv_len;   // size of each argument
+    size_t argc;        // numpber of argument
+    size_t env_len;     // true size of the number of argv (to avoid reallocating every time)
 };
 
 typedef int (*handler_t)(struct request_s *request, struct handler_env_s *env, struct response_s *response);

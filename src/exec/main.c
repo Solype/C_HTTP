@@ -68,9 +68,9 @@ static int handler_f(struct request_s *request, struct handler_env_s *env, struc
 {
     (void)request;
     (void)env;
-    snprintf(request->body, 1024, "{\"params\": \"%.*s\"}", (int)env->argv_len[0], env->argv[0]);
+    snprintf(response->body, 1024, "{\"params\": \"%.*s\"}", (int)env->argv_len[0], env->argv[0]);
     response->content_type = application_json;
-    printf("ROUTE 'f'\n");
+    printf("ROUTE 'f' %d\n", env->argc);
     return 0;
 }
 
