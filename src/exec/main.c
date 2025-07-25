@@ -14,7 +14,7 @@ __attribute__((section(".data"))) static char a[] = "/";
 __attribute__((section(".data"))) static char b[] = "/api/1";
 __attribute__((section(".data"))) static char c[] = "/bb/ping";
 __attribute__((section(".data"))) static char d[] = "/bb/";
-__attribute__((section(".data"))) static char e[] = "/bb/aa/cc/dd";
+__attribute__((section(".data"))) static char e[] = "/api/*/";
 __attribute__((section(".data"))) static char f[] = "/api/*/coucou_les_amis/test";
 
 static int handler_a(struct request_s *request, struct handler_env_s *env, struct response_s *response)
@@ -60,6 +60,8 @@ static int handler_e(struct request_s *request, struct handler_env_s *env, struc
     (void)request;
     (void)response;
     (void)env;
+    response->body_size = snprintf(response->body, 1024, "<html><body><h1>Hello !</h1><p>I am %s</p></body></html>", env->argv[0]);
+    response->content_type = text_html;
     printf("ROUTE 'e'\n");
     return 0;
 }
@@ -68,9 +70,9 @@ static int handler_f(struct request_s *request, struct handler_env_s *env, struc
 {
     (void)request;
     (void)env;
-    snprintf(response->body, 1024, "{\"params\": \"%.*s\"}", (int)env->argv_len[0], env->argv[0]);
+    response->body_size = snprintf(response->body, 1024, "{\"params\": \"%.*s\"}", (int)env->argv_len[0], env->argv[0]);
     response->content_type = application_json;
-    printf("ROUTE 'f' %d\n", env->argc);
+    printf("ROUTE 'f' %ld\n", env->argc);
     return 0;
 }
 

@@ -12,73 +12,70 @@
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-
-static int does_children_exist(struct __route_tree_s *childrenren, size_t n_chldrn, char const *path, size_t const path_len)
+static struct __route_tree_s *get_child_normal(struct __route_tree_s *tree, char const *path, size_t len)
 {
-    if (n_chldrn == 0) {
-        return -1;
-    }
-    for (size_t i = 0; i < n_chldrn; ++i) {
-        if (strncmp(childrenren[i].path, path, path_len) == 0) {
-            return i;
+    size_t index = hash(path, len);
+
+    log_info("index hashed : %u", index);
+    for (size_t i = 0; i < tree->children_len[index]; i++) {
+        log_info("comparing the %d first char of %s and %s", len, tree->children[index][i].path, path);
+        if (strncmp(tree->children[index][i].path, path, len) == 0) {
+            return &tree->children[index][i];
         }
     }
-    return -1;
+    return NULL;
 }
 
-static struct __route_tree_s *router_default_children_handler(
-    struct __route_tree_s *tree, char const *path, size_t const path_len,
-    struct handler_env_s *env)
+static void env_add_whild_card(struct handler_env_s * env, char const *path, size_t len)
 {
-    log_info("path : %d %s", path_len, path);
-
-    if (env->env_len == env->argc) {
+    log_info("path : %d %s", len, path);
+    return;
+    if (env->argc == env->env_len) {
         env->argv = realloc(env->argv, sizeof(char *) * (env->env_len + 1));
-        if (env->argv == NULL) {
-            log_error("Failed to allocate memory");
-            return NULL;
-        }
-        env->argv_len = realloc(env->argv_len, sizeof(size_t) * (env->env_len + 1));
-        if (env->argv_len == NULL) {
-            log_error("Failed to allocate memory");
-            return NULL;
-        }
-        env->env_len++;
+        env->argv = realloc(env->argv_len, sizeof(size_t) * (env->env_len + 1));
+        env->env_len += 1;
     }
-    env->argv[env->argc] = (char *)path + 1;
-    env->argv_len[env->argc] = path_len - 1;
-    env->argc++;
-    return tree->default_children;
+    env->argv[env->argc] = (char *)path;
+    env->argv_len[env->argc] = len;
+    env->argc += 1;
 }
 
-static handler_t finally_get_handler(struct __route_tree_s *root, char const *path, enum method_e method)
+static int get_slash_offset(char const *path)
 {
-    int index = hash(path, strlen(path));
-    int subindex = does_children_exist(root->children[index], root->children_len[index], path, strlen(path));
+    int i = 0;
 
-    return (subindex == -1) ? NULL : root->children[index][subindex].handler[method];
+    while (path[i] == '/') {
+        i += 1;
+    }
+    return i;
 }
 
 static handler_t router_search(struct __route_tree_s *tree, char const *path, enum method_e method, struct handler_env_s *env)
 {
-    char const *save_pointer;
-    char *slash_addr;
-    int index;
-    int tree_path_len;
-    int subindex;
+    char *slash_addr ;
+    long int current_path_node_len;
+    struct __route_tree_s *child;
+    int slash_offset;
 
     while (1) {
-        save_pointer = path;
-        slash_addr = strchr(path + 1, '/');
-        if (slash_addr == NULL)
-            return finally_get_handler(tree, path, method);
-        path = slash_addr;
-        tree_path_len = ((intptr_t)save_pointer > (intptr_t)path) ? save_pointer - path : path - save_pointer;
-        index = hash(save_pointer, tree_path_len);
-        subindex = does_children_exist(tree->children[index], tree->children_len[index], save_pointer, tree_path_len);
-        tree = (subindex == -1) ? router_default_children_handler(tree, save_pointer, tree_path_len, env) : &(tree->children[index][subindex]);
-        if (tree == NULL)
+        slash_offset = get_slash_offset(path);
+        slash_addr = strchr(path + slash_offset, '/');
+        current_path_node_len = (slash_addr == NULL) ? strlen(path) : (long int)(path - slash_addr);
+        current_path_node_len = (current_path_node_len < 0) ? -current_path_node_len : current_path_node_len;
+        current_path_node_len -= slash_offset;
+        child = get_child_normal(tree, path + slash_offset, current_path_node_len);
+        if (child == NULL) {
+            tree = tree->default_children;
+            env_add_whild_card(env, path + slash_offset, current_path_node_len);
+        } else {
+            tree = child;
+        }
+        if (tree == NULL) {
             return NULL;
+        }
+        if (slash_addr == NULL) {
+            return tree->handler[method];
+        }
     }
 }
 
@@ -90,8 +87,12 @@ static handler_t router_search(struct __route_tree_s *tree, char const *path, en
 
 int handler_env_destroy(struct handler_env_s *env)
 {
-    free(env->argv);
-    free(env->argv_len);
+    if (env->argv != NULL) {
+        free(env->argv);
+    }
+    if (env->argv_len != NULL) {
+        free(env->argv_len);
+    }
     env->argv = NULL;
     env->argv_len = NULL;
     env->argc = 0;
@@ -120,8 +121,10 @@ handler_t router_get_handler(router_t *tree, char const *path, enum method_e met
         log_error("Invalid method, can't get handler");
         return NULL;
     }
-    if (path[0] == '/' && path[1] == '\0')
+    if (path[0] == '/' && path[1] == '\0') {
+        log_info("getting the root");
         return root->handler[method];
+    }
     env->argc = 0;
     return router_search(root, path, method, env);
 }

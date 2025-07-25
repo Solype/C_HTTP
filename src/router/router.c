@@ -14,102 +14,57 @@
 //////////////////////////////////////////////////////////////////////
 
 
-static int check_if_children_already_exists(struct __route_tree_s *childrenren, size_t nb_children, char const *path, size_t const path_len)
+
+static struct __route_tree_s *get_child(struct __route_tree_s *current_node, route_t *route)
 {
-    if (nb_children == 0) {
-        return -1;
+    char *next_slash = strchr(route->path + 1, '/');
+    int len_current_text_node = (next_slash == NULL) ? strlen(route->path) - 1 : route->path - next_slash;
+    int index;
+    int subindex;
+
+    len_current_text_node = (len_current_text_node < 0) ? -len_current_text_node : len_current_text_node;
+    // Handling the default child;
+    if (strncmp(route->path, "*/", 2) == 0) {
+        current_node->default_children = malloc(sizeof(struct __route_tree_s));
+        if (current_node->default_children == NULL) {
+            return NULL;
+        }
+        set_empty_tree_node(current_node->default_children);
+        return current_node->default_children;
     }
-    for (size_t i = 0; i < nb_children; ++i) {
-        if (strncmp(childrenren[i].path, path, path_len) == 0) {
-            return i;
+
+    // handling the normal nodes
+    index = hash(route->path, len_current_text_node);
+    for (size_t i = 0; i < current_node->children_len[index]; ++i) {
+        if (strncmp(current_node->children[index][i].path, route->path, len_current_text_node) == 0) {
+            return &current_node->children[index][i];
         }
     }
-    return -1;
-}
-
-static int insert_new_children(struct __route_tree_s *tree, int index, char *path, size_t const path_len)
-{
-    int subindex = check_if_children_already_exists(
-        tree->children[index], tree->children_len[index], path, path_len
-    );
-
-    if (subindex != -1) {
-        return subindex;
-    }
-    subindex = tree->children_len[index];
-    ++tree->children_len[index];
-    tree->children[index] = realloc(tree->children[index], sizeof(struct __route_tree_s) * (subindex + 1));
-    if (tree->children[index] == NULL) {
-        return -log_error("Failed to allocate memory");
-    }
-    set_empty_tree_node(&(tree->children[index][subindex]));
-    tree->children[index][subindex].path = path;
-    tree->children[index][subindex].path_len = path_len;
-    return subindex;
-}
-
-static struct __route_tree_s *check_default_children(struct __route_tree_s *tree, route_t *route)
-{
-    (void)tree;
-
-    if (strncmp(route->path, "/*/", 3) == 0) {
-        route->path += 2;
-        if (tree->default_children != NULL) {
-            return tree->default_children;
-        }
-        tree->default_children = malloc(sizeof(struct __route_tree_s));
-        set_empty_tree_node(tree->default_children);
-        return tree->default_children;
-    }
-    return NULL;
-}
-
-static int finally_insert_handler(struct __route_tree_s *tree, route_t *route)
-{
-    int index = hash(route->path, strlen(route->path));
-    int subindex = insert_new_children(tree, index, route->path, strlen(route->path));
-
-    if (subindex == -1) {
-        return EXIT_FAILURE;
-    }
-    tree->children[index][subindex].handler[get_method(route->method)] = route->handler;
-    return EXIT_SUCCESS;
-}
-
-static struct __route_tree_s *dive_deeper_in_the_tree(struct __route_tree_s *tree, route_t *route, char *save_pointer)
-{
-    int subindex = ((intptr_t)save_pointer > (intptr_t)route->path) ? save_pointer - route->path : route->path - save_pointer;
-    int index = hash(save_pointer, subindex);
-
-    subindex = insert_new_children(tree, index, save_pointer, subindex);
-    if (subindex == -1) {
-        return NULL;
-    }
-    return &(tree->children[index][tree->children_len[index] - 1]);
+    subindex = current_node->children_len[index];
+    current_node->children_len[index] += 1;
+    current_node->children[index] = realloc(current_node->children[index], sizeof(struct __route_tree_s) * current_node->children_len[index]);
+    set_empty_tree_node(&current_node->children[index][subindex]);
+    current_node->children[index][subindex].path = route->path;
+    current_node->children[index][subindex].path_len = len_current_text_node;
+    return &current_node->children[index][subindex];
 }
 
 static int insert_route(struct __route_tree_s *tree, route_t *route)
 {
-    char *save_pointer;
     char *slash_addr;
-    struct __route_tree_s *tmp = NULL;
 
     while (1) {
-        save_pointer = route->path;
-        slash_addr = strchr(route->path + 1, '/');
-        tmp = check_default_children(tree, route);
-        if (tmp != NULL) {
-            tree = tmp;
-            continue;
+        if (route->path == NULL) {
+            tree->handler[get_method(route->method)] = route->handler;
+            return EXIT_SUCCESS;
         }
-        if (slash_addr == NULL) {
-            return finally_insert_handler(tree, route);
-        }
-        route->path = slash_addr;
-        tree = dive_deeper_in_the_tree(tree, route, save_pointer);
+        tree = get_child(tree, route);
         if (tree == NULL) {
             return EXIT_FAILURE;
         }
+        log_info("got child : %d %s", tree->path_len, tree->path);
+        slash_addr = strchr(route->path + 1, '/');
+        route->path = slash_addr;
     }
     return EXIT_SUCCESS;
 }
@@ -129,6 +84,13 @@ int router_add_route(router_t *tree, route_t *route)
     if (route == NULL) {
         return log_error("Route is not initialized");
     }
+    if (strcmp("/", route->path) == 0) {
+        struct __route_tree_s *root = (struct __route_tree_s *)tree;
+        root->handler[get_method(route->method)] = route->handler;
+        log_info("setting a root handler at : %s", route->path);
+        return EXIT_SUCCESS;
+    }
+    log_info("inserting : %s", route->path);
     return insert_route((struct __route_tree_s *)tree, route);
 }
 

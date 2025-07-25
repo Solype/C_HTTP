@@ -76,6 +76,7 @@ static void handle_client(int client_socket, router_t router, struct handler_env
     char buffer[1024] = {0};
 
     response.body = buffer;
+    response.body_size = 0;
     response.call_back = NULL;
     response.content_type = no_body;
     response.status_code = 200;

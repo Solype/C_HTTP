@@ -59,6 +59,7 @@ typedef void (*deleter_t)(void *);
 
 struct response_s {
     char *body;
+    size_t body_size;
     char *status_message;
     size_t status_code;
     enum constent_type_e content_type;
