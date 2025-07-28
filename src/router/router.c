@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stddef.h>
 
 
 //////////////////////////////////////////////////////////////////////
@@ -13,18 +15,31 @@
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
+static int get_slash_offset(char const *path)
+{
+    int i = 0;
+
+    while (path[i] == '/') {
+        i += 1;
+    }
+    return i;
+}
 
 
 static struct __route_tree_s *get_child(struct __route_tree_s *current_node, route_t *route)
 {
-    char *next_slash = strchr(route->path + 1, '/');
-    int len_current_text_node = (next_slash == NULL) ? strlen(route->path) - 1 : route->path - next_slash;
+    int slash_off_set = get_slash_offset(route->path);
+    char *true_path = route->path + slash_off_set;
+    char *next_slash = strchr(true_path, '/');
+    ptrdiff_t diff = (next_slash == NULL) ? (ptrdiff_t)(strlen(true_path)) : (next_slash - true_path);
+    size_t len_current_text_node = diff < 0 ? (size_t)(-diff) : (size_t)diff;
     int index;
     int subindex;
-
-    len_current_text_node = (len_current_text_node < 0) ? -len_current_text_node : len_current_text_node;
     // Handling the default child;
-    if (strncmp(route->path, "*/", 2) == 0) {
+    if (true_path[0] == '*' && (true_path[1] == 0 || true_path[1] == '/')) {
+        if (current_node->default_children != NULL) {
+            return current_node->default_children;
+        }
         current_node->default_children = malloc(sizeof(struct __route_tree_s));
         if (current_node->default_children == NULL) {
             return NULL;
@@ -34,9 +49,9 @@ static struct __route_tree_s *get_child(struct __route_tree_s *current_node, rou
     }
 
     // handling the normal nodes
-    index = hash(route->path, len_current_text_node);
+    index = hash(true_path, len_current_text_node);
     for (size_t i = 0; i < current_node->children_len[index]; ++i) {
-        if (strncmp(current_node->children[index][i].path, route->path, len_current_text_node) == 0) {
+        if (strncmp(current_node->children[index][i].path, true_path, len_current_text_node) == 0) {
             return &current_node->children[index][i];
         }
     }
@@ -44,7 +59,7 @@ static struct __route_tree_s *get_child(struct __route_tree_s *current_node, rou
     current_node->children_len[index] += 1;
     current_node->children[index] = realloc(current_node->children[index], sizeof(struct __route_tree_s) * current_node->children_len[index]);
     set_empty_tree_node(&current_node->children[index][subindex]);
-    current_node->children[index][subindex].path = route->path;
+    current_node->children[index][subindex].path = true_path;
     current_node->children[index][subindex].path_len = len_current_text_node;
     return &current_node->children[index][subindex];
 }
@@ -62,7 +77,6 @@ static int insert_route(struct __route_tree_s *tree, route_t *route)
         if (tree == NULL) {
             return EXIT_FAILURE;
         }
-        log_info("got child : %d %s", tree->path_len, tree->path);
         slash_addr = strchr(route->path + 1, '/');
         route->path = slash_addr;
     }
@@ -93,5 +107,4 @@ int router_add_route(router_t *tree, route_t *route)
     log_info("inserting : %s", route->path);
     return insert_route((struct __route_tree_s *)tree, route);
 }
-
 

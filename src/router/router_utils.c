@@ -107,19 +107,28 @@ router_t *router_init(route_t *routes, size_t nb_routes)
     return (router_t *)root;
 }
 
+static void recursiv_router_destroy(struct __route_tree_s *tree)
+{
+    if (tree == NULL) {
+        return;
+    }
+    for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
+        for (size_t j = 0; j < tree->children_len[i]; ++j) {
+            recursiv_router_destroy(&(tree->children[i][j]));
+        }
+        free(tree->children[i]);
+    }
+    recursiv_router_destroy((tree->default_children));
+    if (tree->default_children != NULL) {
+        free(tree->default_children);
+    }
+}
+
 void router_destroy(router_t *tree)
 {
     struct __route_tree_s *root = (struct __route_tree_s *)tree;
 
-    if (root == NULL) {
-        return;
-    }
-    for (size_t i = 0; i < HTTP_ROUTE_CHILD_COUNT; ++i) {
-        for (size_t j = 0; j < root->children_len[i]; ++j) {
-            router_destroy((router_t)(&(root->children[i][j])));
-        }
-    }
-    router_destroy((router_t)((root->default_children)));
+    recursiv_router_destroy(root);
     free(root);
 }
 

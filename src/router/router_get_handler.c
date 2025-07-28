@@ -16,9 +16,7 @@ static struct __route_tree_s *get_child_normal(struct __route_tree_s *tree, char
 {
     size_t index = hash(path, len);
 
-    log_info("index hashed : %u", index);
     for (size_t i = 0; i < tree->children_len[index]; i++) {
-        log_info("comparing the %d first char of %s and %s", len, tree->children[index][i].path, path);
         if (strncmp(tree->children[index][i].path, path, len) == 0) {
             return &tree->children[index][i];
         }
@@ -28,11 +26,9 @@ static struct __route_tree_s *get_child_normal(struct __route_tree_s *tree, char
 
 static void env_add_whild_card(struct handler_env_s * env, char const *path, size_t len)
 {
-    log_info("path : %d %s", len, path);
-    return;
     if (env->argc == env->env_len) {
         env->argv = realloc(env->argv, sizeof(char *) * (env->env_len + 1));
-        env->argv = realloc(env->argv_len, sizeof(size_t) * (env->env_len + 1));
+        env->argv_len = realloc(env->argv_len, sizeof(size_t) * (env->env_len + 1));
         env->env_len += 1;
     }
     env->argv[env->argc] = (char *)path;
@@ -66,8 +62,10 @@ static handler_t router_search(struct __route_tree_s *tree, char const *path, en
         child = get_child_normal(tree, path + slash_offset, current_path_node_len);
         if (child == NULL) {
             tree = tree->default_children;
+            log_info("getting default");
             env_add_whild_card(env, path + slash_offset, current_path_node_len);
         } else {
+            log_info("route child : %.*s", child->path_len, child->path);
             tree = child;
         }
         if (tree == NULL) {
@@ -76,6 +74,7 @@ static handler_t router_search(struct __route_tree_s *tree, char const *path, en
         if (slash_addr == NULL) {
             return tree->handler[method];
         }
+        path = slash_addr;
     }
 }
 
@@ -89,9 +88,11 @@ int handler_env_destroy(struct handler_env_s *env)
 {
     if (env->argv != NULL) {
         free(env->argv);
+        log_success("array of params freed !");
     }
     if (env->argv_len != NULL) {
         free(env->argv_len);
+        log_success("array of sizes freed !");
     }
     env->argv = NULL;
     env->argv_len = NULL;

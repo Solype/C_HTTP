@@ -11,10 +11,10 @@
 #define PORT 8080
 
 __attribute__((section(".data"))) static char a[] = "/";
-__attribute__((section(".data"))) static char b[] = "/api/1";
+__attribute__((section(".data"))) static char b[] = "/api";
 __attribute__((section(".data"))) static char c[] = "/bb/ping";
 __attribute__((section(".data"))) static char d[] = "/bb/";
-__attribute__((section(".data"))) static char e[] = "/api/*/";
+__attribute__((section(".data"))) static char e[] = "/api/*";
 __attribute__((section(".data"))) static char f[] = "/api/*/coucou_les_amis/test";
 
 static int handler_a(struct request_s *request, struct handler_env_s *env, struct response_s *response)
