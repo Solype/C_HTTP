@@ -70,7 +70,7 @@ static int init_query(struct header_s *header)
     char *save_pointer;
 
     if (query == NULL) {
-        return log_info("No query parameter on url: %s", header->uri);;
+        return 0;
     }
     *query = '\0';
     query++;
@@ -132,7 +132,7 @@ int header_init(struct header_s *header, char *raw_request, char **body)
         return log_error("Invalid request: %03b", (header->uri == NULL) << 0 | (header->version == NULL) << 1 | (header->method == ERROR) << 2);
     }
     init_query(header);
-    return log_success("Request %s with method %s", header->uri, method, header->version);
+    return EXIT_SUCCESS;
 }
 
 int header_destroy(struct header_s *header)

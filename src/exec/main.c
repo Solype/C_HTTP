@@ -7,6 +7,7 @@
 #include "http_server.h"
 #include "router/router.h"
 #include "utils/http_log.h"
+#include "response.h"
 
 #define PORT 8080
 
@@ -23,7 +24,6 @@ static int handler_a(struct request_s *request, struct handler_env_s *env, struc
     (void)env;
     response->body = "{\"a\": \"a\"}";
     response->content_type = application_json;
-    response->status_code = 403;
     printf("ROUTE 'a'\n");
     return 0;
 }
@@ -33,8 +33,15 @@ static int handler_b(struct request_s *request, struct handler_env_s *env, struc
     (void)request;
     (void)response;
     (void)env;
+    char const *query_param = header_query_get(&request->headers, "test");
+    if (query_param == NULL) {
+        response_set_content(response, 400);
+        return EXIT_SUCCESS;
+    }
+    response->content_type = application_json;
+    response->body_size = snprintf(response->body, 1024, "{\"%s\": \"%s\"}", "test", query_param);
     printf("ROUTE 'b'\n");
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 static int handler_c(struct request_s *request, struct handler_env_s *env, struct response_s *response)

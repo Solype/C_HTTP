@@ -73,7 +73,6 @@ static int read_body(struct request_s *request, int client_fd,
     memcpy(request->body, body_start, already_read);
     request->body[already_read] = '\0';
     if (total_to_read == 0) {
-        log_info("nothing to read");
         return 0;
     }
     memset(request->body + already_read, 0, total_to_read);
@@ -97,7 +96,6 @@ int request_init(struct request_s *request, int client_socket)
         free(request->raw_request);
         return log_error("Failed to read from client");
     }
-    log_info("Allocated %d bytes", total_read);
     header_init(&request->headers, request->raw_request, &end_of_header);
     read_body(request, client_socket, end_of_header, total_read);
     return 0;

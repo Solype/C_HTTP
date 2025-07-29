@@ -1,4 +1,4 @@
-
+#include <stddef.h>
 
 #ifndef RESPONSE_H_
     #define RESPONSE_H_
@@ -66,5 +66,6 @@ struct response_s {
     deleter_t call_back;
 };
 
+int response_set_content(struct response_s *res, size_t code);
 
 #endif /* !RESPONSE_H_ */

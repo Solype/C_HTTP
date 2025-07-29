@@ -62,10 +62,8 @@ static handler_t router_search(struct __route_tree_s *tree, char const *path, en
         child = get_child_normal(tree, path + slash_offset, current_path_node_len);
         if (child == NULL) {
             tree = tree->default_children;
-            log_info("getting default");
             env_add_whild_card(env, path + slash_offset, current_path_node_len);
         } else {
-            log_info("route child : %.*s", child->path_len, child->path);
             tree = child;
         }
         if (tree == NULL) {
@@ -123,7 +121,6 @@ handler_t router_get_handler(router_t *tree, char const *path, enum method_e met
         return NULL;
     }
     if (path[0] == '/' && path[1] == '\0') {
-        log_info("getting the root");
         return root->handler[method];
     }
     env->argc = 0;

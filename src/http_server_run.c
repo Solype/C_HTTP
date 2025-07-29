@@ -91,7 +91,7 @@ static void handle_client(int client_socket, router_t router, struct handler_env
             log_error("Failed to handle request");
             format_automatic_500(&response);
         } else {
-            log_success("Request handled");
+            log_success("%u %s %s", response.status_code, get_method_name(request.headers.method), request.headers.uri);
         }
     } else {
         format_automatic_404(&response);
